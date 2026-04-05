@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-  Activity, LayoutGrid, Timer, 
-  Target, BookOpen, Layers, LogOut, Download, 
-  ChevronLeft, ChevronRight, BarChart2, Bell,
+  Activity, Timer, 
+  Target, Layers, LogOut, Download, 
+  ChevronLeft, ChevronRight, Bell,
   Wallet, Eye, EyeOff, Shield, Dumbbell,
   ShieldCheck, PencilLine, Zap, AlertOctagon
 } from 'lucide-react';
@@ -85,13 +85,16 @@ export function Sidebar() {
       {/* Navigational Logic */}
       <nav className="flex-1 px-4 space-y-8 mt-10 overflow-y-auto custom-scrollbar relative z-10">
         {MISSION_GROUPS.map((group) => (
-          <div key={group.title} className="space-y-3">
+          <div key={group.title} className="space-y-4">
              {!collapsed && (
-               <h3 className="px-4 text-[8px] font-black text-zinc-700 uppercase tracking-[0.4em] mb-4">
-                 {group.title}
-               </h3>
+               <div className="flex items-center gap-3 px-4">
+                  <div className="w-1 h-3 bg-red-600/30 rounded-full" />
+                  <h3 className="text-[9px] font-black text-red-500/40 uppercase tracking-[0.5em] mb-0">
+                    {group.title}
+                  </h3>
+               </div>
              )}
-             <div className="space-y-1">
+             <div className="space-y-1.5">
                {group.items.map((item) => (
                  <NavLink
                    key={item.path}

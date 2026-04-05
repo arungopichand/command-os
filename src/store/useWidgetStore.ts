@@ -177,7 +177,7 @@ export const useWidgetStore = create<WidgetState>()(
 
     }),
     {
-      name: 'command-os-widgets',
+      name: 'command-os-widgets-v2', // Bumped version to force clean hydration
       storage: createJSONStorage(() => localStorage),
     }
   )
