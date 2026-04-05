@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/supabase';
 
 // Global cache to prevent multiple hooks from fetching the same key concurrently
 const cache: Record<string, any> = {};
