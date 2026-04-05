@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { CheckCircle2, Circle, TrendingUp, Play, RefreshCcw, Settings, X, Plus, Trash2, Zap, Star } from 'lucide-react';
+import { CheckCircle2, Circle, TrendingUp, Play, RefreshCcw, Settings, X, Plus, Trash2, Zap, Star, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRank, getNextRank, getLevelProgress, XP_PER_TASK, XP_PERFECT_DAY_BONUS } from '../lib/xp';
+import { getDailyLesson } from '../lib/curriculum';
+import { useVoiceCommands } from '../hooks/useVoiceCommands';
+import type { MarketTicker } from '../lib/market';
+import { getSimulatedMarketData, getMarketSentiment } from '../lib/market';
 
 const DEFAULT_MISSIONS: Record<number, any> = {
   1: { type: 'BUILD', subtitle: 'Push the limits.', tasks: [{ id: '1', title: '.NET Development', min: 50 }, { id: '2', title: 'English Practice', min: 20 }, { id: '3', title: 'Trading Study', min: 20 }, { id: '4', title: 'Workout', min: 20 }, { id: '5', title: 'Typing Drill', min: 10 }] },
@@ -15,16 +19,6 @@ const DEFAULT_MISSIONS: Record<number, any> = {
   0: { type: 'RESET', subtitle: 'Prepare the environment for War.', tasks: [{ id: '1', title: 'Room Reset', min: 30 }, { id: '2', title: 'Meal Prep', min: 60 }, { id: '3', title: 'Plan 4 .NET Tasks', min: 15 }] }
 };
 
-const TRADING_LESSONS = [
-  "Support & Resistance: Identify key levels on the 4H timeframe before entering.",
-  "Risk Management: Never risk more than 1% of your account per trade.",
-  "Price Action: Bull flags form during uptrends — a tight consolidation before continuation.",
-  "Volume Analysis: A breakout on high volume is far more reliable than a low-volume move.",
-  "Psychology: Your P&L is irrelevant mid-trade. Focus only on execution quality.",
-  "Moving Averages: A 9 EMA crossing above the 20 EMA signals short-term momentum shifts.",
-  "Backtesting: Paper trade 100 setups before risking real capital on any new strategy.",
-];
-
 export function WarRoom() {
   const day = new Date().getDay();
   const dateStr = new Date().toISOString().split('T')[0];
@@ -35,13 +29,29 @@ export function WarRoom() {
   const [totalXP, setTotalXP] = useLocalStorage<number>('command_total_xp', 0);
   const [awardedToday, setAwardedToday] = useLocalStorage<Record<string, boolean>>(`xp_awarded_${dateStr}`, {});
 
+  const [marketData, setMarketData] = useState<MarketTicker[]>(getSimulatedMarketData());
+  const [sentiment, setSentiment] = useState(getMarketSentiment(marketData));
   const [cryptoPrices, setCryptoPrices] = useState<any>(null);
   const [loadingCrypto, setLoadingCrypto] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editMin, setEditMin] = useState('');
   const [xpFlash, setXpFlash] = useState<string | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
 
+  // Market Intelligence Update
+  useEffect(() => {
+    const fetchMarketData = () => {
+      const data = getSimulatedMarketData();
+      setMarketData(data);
+      setSentiment(getMarketSentiment(data));
+    };
+    fetchMarketData();
+    const interval = setInterval(fetchMarketData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Crypto Delta Update
   useEffect(() => {
     const fetchCryptoPrices = async () => {
       setLoadingCrypto(true);
@@ -57,22 +67,22 @@ export function WarRoom() {
       setLoadingCrypto(false);
     };
     fetchCryptoPrices();
+    const interval = setInterval(fetchCryptoPrices, 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  const toggleTask = (id: string) => {
+  const toggleTask = useCallback((id: string) => {
     if (isEditing) return;
     const newProgress = { ...progress, [id]: !progress[id] };
     setProgress(newProgress);
 
-    // Award XP on first-time completion
     if (!progress[id] && !awardedToday[id]) {
       const newXP = totalXP + XP_PER_TASK;
       setTotalXP(newXP);
-      setAwardedToday({ ...awardedToday, [id]: true });
+      setAwardedToday(prev => ({ ...prev, [id]: true }));
       setXpFlash(`+${XP_PER_TASK} XP`);
       setTimeout(() => setXpFlash(null), 1500);
 
-      // Perfect day bonus
       const willBeAllDone = currentMission.tasks.every((t: any) => t.id === id || newProgress[t.id]);
       if (willBeAllDone && !awardedToday['__perfect_day__']) {
         setTimeout(() => {
@@ -83,7 +93,24 @@ export function WarRoom() {
         }, 1600);
       }
     }
-  };
+  }, [isEditing, progress, setProgress, awardedToday, setAwardedToday, totalXP, setTotalXP, XP_PER_TASK, XP_PERFECT_DAY_BONUS, currentMission.tasks]);
+
+  const handleVoiceCommand = useCallback((command: string) => {
+    setVoiceTranscript(command);
+    setTimeout(() => setVoiceTranscript(''), 2500);
+    const tasks = currentMission?.tasks || [];
+    for (const task of tasks) {
+      const keywords = task.title.toLowerCase().split(' ');
+      if (keywords.some((kw: string) => kw.length > 3 && command.includes(kw))) {
+        toggleTask(task.id);
+        return;
+      }
+    }
+  }, [currentMission, toggleTask]);
+
+  const { isListening, supported: voiceSupported, startListening, stopListening } = useVoiceCommands({
+    onCommand: handleVoiceCommand
+  });
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,18 +129,23 @@ export function WarRoom() {
   const completedCount = currentMission.tasks.filter((t: any) => progress[t.id]).length;
   const totalCount = currentMission.tasks.length;
   const percentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
-
-  const startYear = new Date(new Date().getFullYear(), 0, 0);
-  const diff = (new Date() as any) - (startYear as any);
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const dailyLesson = TRADING_LESSONS[dayOfYear % TRADING_LESSONS.length];
-
+  const dailyLesson = getDailyLesson();
   const rank = getRank(totalXP);
   const nextRank = getNextRank(totalXP);
   const levelPct = getLevelProgress(totalXP);
 
   return (
     <div className="space-y-6">
+      {/* Voice Command Transcript */}
+      <AnimatePresence>
+        {voiceTranscript && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="fixed bottom-16 left-1/2 -translate-x-1/2 z-[300] bg-slate-900/95 border border-violet-700/50 px-6 py-3 rounded-full text-violet-300 font-bold text-sm backdrop-blur-md flex items-center gap-2">
+            <Mic size={14} /> "{voiceTranscript}"
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* XP Flash Banner */}
       <AnimatePresence>
         {xpFlash && (
@@ -138,6 +170,14 @@ export function WarRoom() {
           <p className="text-3xl font-black text-white">{percentage}%</p>
           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Daily Completion</p>
         </div>
+        {voiceSupported && (
+          <button
+            onClick={isListening ? stopListening : startListening}
+            className={`absolute -top-4 left-0 p-2 rounded-full transition-all ${isListening ? 'bg-violet-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.6)] animate-pulse' : 'bg-violet-950/20 text-violet-500 hover:bg-black'}`}
+          >
+            {isListening ? <Mic size={20} /> : <MicOff size={20} />}
+          </button>
+        )}
         <button 
           onClick={() => setIsEditing(!isEditing)}
           className={`absolute -top-4 right-0 p-2 rounded-full transition-all ${isEditing ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)]' : 'bg-red-950/20 text-red-500 hover:bg-black'}`}
@@ -169,7 +209,6 @@ export function WarRoom() {
         <p className="text-[10px] text-amber-500/60 mt-1 text-right font-bold uppercase tracking-widest">{levelPct}% to {nextRank?.title ?? 'Max Rank'}</p>
       </GlassCard>
 
-      {/* Mission Progress Bar */}
       <div className="w-full bg-red-950/20 h-4 rounded-full overflow-hidden border border-red-900/30">
         <motion.div 
            initial={{ width: 0 }}
@@ -179,13 +218,10 @@ export function WarRoom() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        
-        {/* Mission Checklist */}
         <GlassCard className="lg:col-span-2 border-red-900/30 shadow-[inset_0_0_20px_rgba(220,38,38,0.05)] bg-black/60 relative">
           <h3 className="text-xl font-bold mb-6 text-red-500 uppercase tracking-widest flex items-center gap-2">
             <Play size={20} /> {isEditing ? 'Edit Protocol' : 'Active Missions'}
           </h3>
-          
           <div className="space-y-3">
              <AnimatePresence>
                {currentMission.tasks.map((task: any) => (
@@ -218,7 +254,6 @@ export function WarRoom() {
                ))}
              </AnimatePresence>
           </div>
-
           {isEditing && (
              <form onSubmit={addTask} className="mt-8 pt-6 border-t border-red-900/40 flex flex-col sm:flex-row gap-3">
                 <input value={editTitle} onChange={e=>setEditTitle(e.target.value)} type="text" placeholder="Task Name" className="flex-1 bg-black/40 border border-red-900/30 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500/50" />
@@ -230,31 +265,53 @@ export function WarRoom() {
           )}
         </GlassCard>
 
-        {/* Intel Panel */}
         <div className="space-y-6">
           <GlassCard className="border-red-900/20 bg-black/40 border-l-4 border-l-red-600 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-             <div className="relative z-10 flex items-center gap-2 mb-4">
-               <TrendingUp size={20} className="text-red-500" />
-               <h3 className="font-bold uppercase tracking-widest text-red-400 text-sm">Daily Intelligence</h3>
+             <div className="relative z-10 flex items-center justify-between mb-4">
+               <div className="flex items-center gap-2">
+                 <TrendingUp size={20} className="text-red-500" />
+                 <h3 className="font-bold uppercase tracking-widest text-red-400 text-sm">Intel Panel</h3>
+               </div>
+               <span className={`text-[10px] font-black uppercase tracking-widest ${sentiment.color} animate-pulse px-3 py-1 bg-black/60 rounded-full border border-white/5`}>
+                 {sentiment.status}
+               </span>
              </div>
              <div className="mb-4 bg-red-950/20 p-4 rounded-xl border border-red-900/30">
                 <p className="text-[10px] text-red-500/80 uppercase tracking-widest font-bold mb-1">Trading Curriculum</p>
                 <p className="text-sm font-semibold text-white leading-relaxed">{dailyLesson}</p>
              </div>
-             <div className="space-y-2">
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Live Market Tape</p>
-                {loadingCrypto ? <p className="text-red-400 animate-pulse text-xs uppercase">Establishing Connection...</p> : (
-                  cryptoPrices && Object.entries(cryptoPrices).map(([coin, data]: any) => (
-                    <div key={coin} className="flex justify-between items-center bg-black/60 border border-white/5 rounded-lg p-2.5">
-                      <p className="text-xs text-slate-400 font-bold">{coin}</p>
-                      <p className="text-sm font-black text-white">${data.price.toLocaleString()}</p>
-                      <p className={`text-[10px] font-bold ${data.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {data.change >= 0 ? '▲' : '▼'} {Math.abs(data.change).toFixed(2)}%
-                      </p>
-                    </div>
-                  ))
-                )}
+             <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Top Stocks & Equity</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {marketData.map((ticker) => (
+                      <div key={ticker.symbol} className="bg-black/60 border border-white/5 rounded-lg p-2 flex flex-col justify-between h-14">
+                        <div className="flex justify-between items-center">
+                          <p className={`text-[10px] font-black ${ticker.type === 'index' ? 'text-amber-500' : 'text-sky-400'}`}>{ticker.symbol}</p>
+                          <p className={`text-[8px] font-bold ${ticker.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                            {ticker.change >= 0 ? '+' : ''}{ticker.change}%
+                          </p>
+                        </div>
+                        <p className="text-xs font-black text-white">${ticker.price.toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2 border-t border-white/5 pt-4">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Crypto Delta</p>
+                  {loadingCrypto ? <p className="text-red-400 animate-pulse text-xs uppercase">Establishing Connection...</p> : (
+                    cryptoPrices && Object.entries(cryptoPrices).map(([coin, data]: any) => (
+                      <div key={coin} className="flex justify-between items-center bg-black/60 border border-white/5 rounded-lg p-2.5">
+                        <p className="text-[10px] text-slate-400 font-bold">{coin}</p>
+                        <p className="text-sm font-black text-white">${data.price.toLocaleString()}</p>
+                        <p className={`text-[10px] font-bold ${data.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {data.change >= 0 ? '▲' : '▼'} {Math.abs(data.change).toFixed(2)}%
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
              </div>
           </GlassCard>
 
@@ -267,7 +324,6 @@ export function WarRoom() {
              </p>
           </GlassCard>
         </div>
-
       </div>
     </div>
   );
