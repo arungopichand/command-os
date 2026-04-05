@@ -10,6 +10,8 @@ import { Project360 } from './modules/Project360';
 import { Learning } from './modules/Learning';
 import { CustomSandbox } from './modules/CustomSandbox';
 import { Stats } from './modules/Stats';
+import { Notifications } from './modules/Notifications';
+import { registerServiceWorker } from './lib/notifications';
 import { Auth } from './modules/Auth';
 import { supabase } from './lib/supabase';
 
@@ -26,6 +28,9 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
+
+    // Register Service Worker for Push Notifications
+    registerServiceWorker();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -47,6 +52,7 @@ export default function App() {
           <Route path="learning" element={<Learning />} />
           <Route path="sandbox" element={<CustomSandbox />} />
           <Route path="stats" element={<Stats />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </BrowserRouter>
