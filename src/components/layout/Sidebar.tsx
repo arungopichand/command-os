@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Activity, LayoutGrid, Timer, Coffee, Sparkles, Target, BookOpen, Layers, LogOut, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, LayoutGrid, Timer, Coffee, Sparkles, Target, BookOpen, Layers, LogOut, Download, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react';
 import { exportData } from '../../utils/exportData';
 import { supabase } from '../../lib/supabase';
 
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/learning', label: 'Learning Vault', icon: BookOpen },
   { path: '/manifestation', label: 'Vision', icon: Sparkles },
   { path: '/sandbox', label: 'Sandbox', icon: Layers },
+  { path: '/stats', label: 'Stats', icon: BarChart2 },
 ];
 
 export function Sidebar() {

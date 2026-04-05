@@ -9,6 +9,7 @@ import { Manifestation } from './modules/Manifestation';
 import { Project360 } from './modules/Project360';
 import { Learning } from './modules/Learning';
 import { CustomSandbox } from './modules/CustomSandbox';
+import { Stats } from './modules/Stats';
 import { Auth } from './modules/Auth';
 import { supabase } from './lib/supabase';
 
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="360" element={<Project360 />} />
           <Route path="learning" element={<Learning />} />
           <Route path="sandbox" element={<CustomSandbox />} />
+          <Route path="stats" element={<Stats />} />
         </Route>
       </Routes>
     </BrowserRouter>
