@@ -14,7 +14,7 @@ const BASE_GOALS = [
 
 export function Project360() {
   const [goals, setGoals] = useLocalStorage<{id: string, text: string, completed: boolean}[]>('apex_360_goals', BASE_GOALS);
-  const [hyration, setHydration] = useLocalStorage<number>('apex_hydration_today', 0);
+  const [hydration, setHydration] = useLocalStorage<number>('apex_hydration_today', 0);
   const [newGoal, setNewGoal] = useState('');
 
   const toggleGoal = (id: string) => {
@@ -49,10 +49,10 @@ export function Project360() {
             <div className="absolute top-0 w-full h-full bg-cyan-900/10 transition-all group-hover:bg-cyan-600/10 pointer-events-none"></div>
             <Droplet size={48} className="text-cyan-500 mb-6 drop-shadow-[0_0_12px_rgba(6,182,212,0.5)]" />
             <h3 className="text-xs font-black text-cyan-400 uppercase tracking-[0.2em] mb-2">Daily Intake</h3>
-            <p className="text-5xl font-black text-white mb-6 tracking-tighter">{hyration}L</p>
+            <p className="text-5xl font-black text-white mb-6 tracking-tighter">{hydration}L</p>
             <div className="flex gap-4 relative z-10">
-               <button onClick={() => setHydration(Math.max(0, hyration - 1))} className="px-5 py-3 rounded-xl bg-black border border-cyan-900/30 text-slate-400 hover:text-cyan-400 font-black text-xl hover:bg-cyan-950/20 transition-all">-</button>
-               <button onClick={() => setHydration(hyration + 1)} className="px-5 py-3 rounded-xl bg-cyan-600 border border-cyan-500 text-white font-black text-xl hover:bg-cyan-500 transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]">+</button>
+               <button onClick={() => setHydration(Math.max(0, hydration - 1))} className="px-5 py-3 rounded-xl bg-black border border-cyan-900/30 text-slate-400 hover:text-cyan-400 font-black text-xl hover:bg-cyan-950/20 transition-all">-</button>
+               <button onClick={() => setHydration(hydration + 1)} className="px-5 py-3 rounded-xl bg-cyan-600 border border-cyan-500 text-white font-black text-xl hover:bg-cyan-500 transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]">+</button>
             </div>
          </GlassCard>
 
@@ -92,7 +92,7 @@ export function Project360() {
                   >
                      <div className="flex items-start gap-4">
                         <div className="mt-1 flex-shrink-0">
-                           {goal.completed ? <CheckCircle className="text-cyan-600" /> : <Circle className="text-cyan-900 group-hover:text-cyan-500 transition-colors" />}
+                        {goal.completed ? <CheckCircle className="text-cyan-600" /> : <Circle className="text-cyan-900 group-hover:text-cyan-500 transition-colors" />}
                         </div>
                         <p className={`font-semibold text-sm leading-relaxed ${goal.completed ? 'line-through text-slate-500' : 'text-slate-200'}`}>{goal.text}</p>
                      </div>

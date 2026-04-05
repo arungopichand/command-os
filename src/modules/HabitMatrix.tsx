@@ -1,6 +1,6 @@
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Target, CheckSquare, Square } from 'lucide-react';
+import { Target, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function HabitMatrix() {
