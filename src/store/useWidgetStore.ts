@@ -63,6 +63,14 @@ const DEFAULT_TABS: Record<string, TabConfig> = {
       { id: 'weekly_split', type: 'split', label: 'Weekly Split', visible: true, size: 'md', order: 2 },
     ]
   },
+  'english': {
+    id: 'english',
+    label: 'Language Lab',
+    widgets: [
+      { id: 'lexicon_word', type: 'lexicon_word', label: 'Word of the Day', visible: true, size: 'lg', order: 0 },
+      { id: 'lexicon_sentence', type: 'lexicon_sentence', label: 'Operational Context', visible: true, size: 'md', order: 1 },
+    ]
+  },
   'habits': {
     id: 'habits',
     label: 'Discipline Engine',
