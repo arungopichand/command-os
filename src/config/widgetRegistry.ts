@@ -2,7 +2,7 @@ import { lazy } from 'react';
 import type { ComponentType, LazyExoticComponent } from 'react';
 
 // Selective Lazy Loading for Tactical Widgets
-const WarRoom = lazy(() => import('../features/war-room/WarRoom').then(m => ({ default: m.WarRoom })));
+const CommandBriefWidget = lazy(() => import('../features/war-room/WarRoom').then(m => ({ default: m.CommandBriefWidget })));
 const Habits = lazy(() => import('../features/habits/Habits').then(m => ({ default: m.Habits })));
 const HabitSummaryWidget = lazy(() => import('../features/habits/HabitWidgets').then(m => ({ default: m.HabitSummaryWidget })));
 const HabitPrioritiesWidget = lazy(() => import('../features/habits/HabitWidgets').then(m => ({ default: m.HabitPrioritiesWidget })));
@@ -21,6 +21,7 @@ const RiskPanel = lazy(() => import('../features/trading/MarketCommand').then(m 
 // Tactical Physical Widgets
 const DailyProtocol = lazy(() => import('../features/workout/PhysicalOps').then(m => ({ default: m.PhysicalOpsWidget })));
 const WeeklySplit = lazy(() => import('../features/workout/PhysicalOps').then(m => ({ default: m.WeeklySplitWidget })));
+const QuickWorkout = lazy(() => import('../features/workout/PhysicalOps').then(m => ({ default: m.QuickWorkoutWidget })));
 
 // Tactical English Widgets
 const WordOfDay = lazy(() => import('../features/english/LanguageLab').then(m => ({ default: m.WordOfDayWidget })));
@@ -34,7 +35,7 @@ const ChecklistWidget = lazy(() => import('../features/dashboard-widgets').then(
 const ConfigWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.ConfigWidget })));
 
 export const WIDGET_REGISTRY: Record<string, LazyExoticComponent<ComponentType>> = {
-  'brief': WarRoom,
+  'brief': CommandBriefWidget,
   'priorities': HabitPrioritiesWidget,
   'habits': Habits,
   'habit_summary': HabitSummaryWidget,
@@ -54,6 +55,7 @@ export const WIDGET_REGISTRY: Record<string, LazyExoticComponent<ComponentType>>
   'workout_plan': DailyProtocol,
   'streak': StreakWidget,
   'split': WeeklySplit,
+  'quick_workout': QuickWorkout,
 
   // English Lexicon Widgets
   'lexicon_word': WordOfDay,

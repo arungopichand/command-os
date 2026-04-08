@@ -34,13 +34,13 @@ function WordOfTheDay() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div className="space-y-1">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
           <p className="text-[10px] font-black text-fuchsia-500 uppercase tracking-[0.4em]">Lexicon Intelligence</p>
-          <h2 className="text-4xl font-black text-white uppercase tracking-tighter">{item.word}</h2>
+          <h2 className="break-words text-3xl font-black uppercase tracking-tighter text-white sm:text-4xl">{item.word}</h2>
           <p className="text-xs font-bold text-fuchsia-400/60 lowercase italic">{item.phonetic}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 sm:shrink-0">
           <button onClick={speak} className="p-3 bg-fuchsia-600/10 border border-fuchsia-600/20 rounded-xl text-fuchsia-500 hover:bg-fuchsia-600/20 transition-all">
             <Volume2 size={18} />
           </button>
@@ -75,7 +75,7 @@ function SentenceOfTheDay() {
     <div className="relative group">
       <div className="absolute -left-4 top-0 bottom-0 w-1 bg-fuchsia-600/30 rounded-full" />
       <Quote size={32} className="text-fuchsia-600/20 absolute -right-2 -top-2" />
-      <p className="text-lg font-black text-white leading-tight mb-4 italic tracking-tight">
+      <p className="mb-4 text-base font-black italic leading-tight tracking-tight text-white sm:text-lg">
         "{item.sentence}"
       </p>
       <div className="flex items-center gap-3">

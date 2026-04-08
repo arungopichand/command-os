@@ -5,7 +5,7 @@ import {
   Target, Layers, LogOut, Download, 
   ChevronLeft, ChevronRight, Bell,
   Wallet, Eye, EyeOff, Shield, Dumbbell,
-  ShieldCheck, PencilLine, Zap, AlertOctagon
+  ShieldCheck, PencilLine, Zap, AlertOctagon, X
 } from 'lucide-react';
 import { exportData } from '../utils/exportData';
 import { supabase } from '../services/supabase';
@@ -40,22 +40,29 @@ const MISSION_GROUPS = [
   }
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { setAuthenticated } = useAppStore();
   const { isFocusModeEnabled, toggleFocusMode } = useFocus();
   const navigate = useNavigate();
+  const isCompact = collapsed && !mobileOpen;
 
   const handleLogout = async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
     setAuthenticated(false);
+    onClose();
     navigate('/');
   };
 
   return (
-    <aside className={`${collapsed ? 'w-20' : 'w-72'} ${isFocusModeEnabled ? 'opacity-40 hover:opacity-100' : ''} transition-all duration-500 bg-[#020202] border-r border-red-900/20 flex flex-col h-screen sticky top-0 z-50 shrink-0 relative overflow-hidden group/sidebar`}>
+    <aside className={`${isCompact ? 'lg:w-20' : 'lg:w-72'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isFocusModeEnabled ? 'lg:opacity-40 lg:hover:opacity-100' : ''} fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(20rem,calc(100vw-1.5rem))] shrink-0 flex-col overflow-hidden border-r border-red-900/20 bg-[#020202] transition-all duration-300 lg:sticky lg:top-0 lg:h-screen group/sidebar`}>
       
       {/* Tactical Glow Trace */}
       <div className="absolute inset-y-0 left-0 w-[1px] bg-red-600/30 shadow-[0_0_20px_rgba(220,38,38,0.5)] z-20" />
@@ -64,14 +71,22 @@ export function Sidebar() {
       {/* Collapse Action Hub */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-10 bg-red-600 border border-black text-white rounded-full p-1 z-50 hover:scale-110 transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)]"
+        className="absolute -right-3 top-10 z-50 hidden rounded-full border border-black bg-red-600 p-1 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all hover:scale-110 lg:block"
       >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        {isCompact ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>
 
       {/* Primary Identifier */}
-      <div className={`${collapsed ? 'p-6 justify-center' : 'p-8 pb-6'} border-b border-red-900/10 flex items-center relative z-10`}>
-        {collapsed ? (
+      <div className={`${isCompact ? 'justify-center p-6' : 'p-6 pb-5 sm:p-8 sm:pb-6'} relative z-10 flex items-center border-b border-red-900/10`}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-xl border border-white/10 bg-white/[0.03] p-2 text-slate-300 transition-colors hover:bg-white/[0.08] lg:hidden"
+        >
+          <X size={16} />
+        </button>
+
+        {isCompact ? (
           <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)]">
             <Shield size={20} className="text-white" />
           </div>
@@ -87,10 +102,10 @@ export function Sidebar() {
       </div>
 
       {/* Navigational Logic */}
-      <nav className="flex-1 px-4 space-y-8 mt-10 overflow-y-auto custom-scrollbar relative z-10">
+      <nav className="relative z-10 mt-6 flex-1 space-y-8 overflow-y-auto px-4 pb-6 custom-scrollbar lg:mt-10">
         {MISSION_GROUPS.map((group) => (
           <div key={group.title} className="space-y-4">
-             {!collapsed && (
+             {!isCompact && (
                <div className="flex items-center gap-3 px-4">
                   <div className="w-1 h-3 bg-red-600/30 rounded-full" />
                   <h3 className="text-[9px] font-black text-red-500/40 uppercase tracking-[0.5em] mb-0">
@@ -98,13 +113,14 @@ export function Sidebar() {
                   </h3>
                </div>
              )}
-             <div className="space-y-1.5">
+               <div className="space-y-1.5">
                {group.items.map((item) => (
                  <NavLink
                    key={item.path}
                    to={item.path}
+                   onClick={onClose}
                    className={({ isActive }) =>
-                     `flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 font-black uppercase tracking-[0.2em] text-[10px] ${collapsed ? 'justify-center' : ''} ${
+                     `flex items-center gap-4 rounded-2xl px-4 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${isCompact ? 'justify-center' : ''} ${
                        isActive
                          ? 'bg-red-600 text-white shadow-[0_10px_25px_rgba(220,38,38,0.3)] border border-red-400/20'
                          : 'text-zinc-500 hover:text-red-400 hover:bg-red-950/20'
@@ -112,7 +128,7 @@ export function Sidebar() {
                    }
                  >
                    <item.icon size={18} className="shrink-0" />
-                   {!collapsed && <span>{item.label}</span>}
+                   {!isCompact && <span>{item.label}</span>}
                  </NavLink>
                ))}
              </div>
@@ -121,10 +137,10 @@ export function Sidebar() {
       </nav>
 
       {/* Operational Auxiliaries */}
-      <div className={`p-6 mt-auto border-t border-red-900/10 space-y-3 relative z-10 bg-black/40 backdrop-blur-md`}>
+      <div className="relative z-10 mt-auto space-y-3 border-t border-red-900/10 bg-black/40 p-4 backdrop-blur-md sm:p-6">
         
         {/* Emergency Override (Relocated for Layout De-Clutter) */}
-        {!collapsed && !isFocusModeEnabled && (
+        {!isCompact && !isFocusModeEnabled && (
           <button 
             className="w-full flex items-center gap-4 px-4 py-4 mb-2 bg-red-600/10 hover:bg-red-600/20 border border-red-600/40 rounded-2xl text-red-500 font-black tracking-[0.3em] uppercase text-[9px] shadow-[0_0_20px_rgba(220,38,38,0.2)] transition-all group"
             onClick={() => window.dispatchEvent(new CustomEvent('emergency-override'))}
@@ -136,10 +152,10 @@ export function Sidebar() {
 
         <button
           onClick={toggleFocusMode}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-4'} px-4 py-4 rounded-2xl transition-all duration-300 uppercase text-[9px] font-black tracking-[0.3em] ${isFocusModeEnabled ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.5)]' : 'bg-zinc-900 text-slate-500 hover:bg-amber-950/20 hover:text-amber-400'}`}
+          className={`w-full flex items-center ${isCompact ? 'justify-center' : 'gap-4'} rounded-2xl px-4 py-4 text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-300 ${isFocusModeEnabled ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.5)]' : 'bg-zinc-900 text-slate-500 hover:bg-amber-950/20 hover:text-amber-400'}`}
         >
           {isFocusModeEnabled ? <EyeOff size={16} /> : <Eye size={16} />}
-          {!collapsed && <span>{isFocusModeEnabled ? 'Exit Dark Zone' : 'Focus Mode'}</span>}
+          {!isCompact && <span>{isFocusModeEnabled ? 'Exit Dark Zone' : 'Focus Mode'}</span>}
         </button>
 
         <div className="flex gap-2">
@@ -160,7 +176,7 @@ export function Sidebar() {
           </button>
         </div>
 
-        {!collapsed && (
+        {!isCompact && (
           <p className="text-[7px] text-zinc-800 text-center uppercase tracking-[1em] mt-6 font-black">
             Build v2.1.2 Re-Arch
           </p>

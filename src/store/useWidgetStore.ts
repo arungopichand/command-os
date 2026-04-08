@@ -28,42 +28,51 @@ interface WidgetState {
   updateWidgetSize: (tabId: string, widgetId: string, size: WidgetSize) => void;
   reorderWidgets: (tabId: string, widgetIds: string[]) => void;
   renameWidget: (tabId: string, widgetId: string, newLabel: string) => void;
+  resetTab: (tabId: string) => void;
+}
+
+function cloneWidget(widget: WidgetConfig): WidgetConfig {
+  return { ...widget };
+}
+
+function cloneTab(tab: TabConfig): TabConfig {
+  return {
+    ...tab,
+    widgets: tab.widgets.map(cloneWidget),
+  };
 }
 
 function normalizeTabs(tabs?: Record<string, TabConfig>) {
   const mergeTab = (defaultTab: TabConfig, persistedTab?: TabConfig): TabConfig => {
     if (!persistedTab) {
-      return defaultTab;
+      return cloneTab(defaultTab);
     }
 
     const persistedWidgets = new Map(persistedTab.widgets.map((widget) => [widget.id, widget]));
 
     return {
       ...defaultTab,
-      widgets: defaultTab.widgets.map((defaultWidget) => {
-        const persistedWidget = persistedWidgets.get(defaultWidget.id);
+      widgets: defaultTab.widgets
+        .map((defaultWidget) => {
+          const persistedWidget = persistedWidgets.get(defaultWidget.id);
 
-        return persistedWidget
-          ? {
-              ...defaultWidget,
-              visible: persistedWidget.visible,
-              size: persistedWidget.size,
-              order: persistedWidget.order,
-              label: persistedWidget.label,
-            }
-          : defaultWidget;
-      }),
+          return persistedWidget
+            ? {
+                ...defaultWidget,
+                visible: persistedWidget.visible,
+                size: persistedWidget.size,
+                order: persistedWidget.order,
+                label: persistedWidget.label,
+              }
+            : cloneWidget(defaultWidget);
+        })
+        .sort((a, b) => a.order - b.order),
     };
   };
 
-  return {
-    ...DEFAULT_TABS,
-    ...tabs,
-    command: mergeTab(DEFAULT_TABS.command, tabs?.command),
-    habits: mergeTab(DEFAULT_TABS.habits, tabs?.habits),
-    focus: mergeTab(DEFAULT_TABS.focus, tabs?.focus),
-    goals: mergeTab(DEFAULT_TABS.goals, tabs?.goals),
-  };
+  return Object.fromEntries(
+    Object.entries(DEFAULT_TABS).map(([tabId, defaultTab]) => [tabId, mergeTab(defaultTab, tabs?.[tabId])]),
+  ) as Record<string, TabConfig>;
 }
 
 const DEFAULT_TABS: Record<string, TabConfig> = {
@@ -75,9 +84,9 @@ const DEFAULT_TABS: Record<string, TabConfig> = {
       { id: 'priorities', type: 'priorities', label: 'Today Habits', visible: true, size: 'md', order: 1 },
       { id: 'habits_summary', type: 'habit_summary', label: 'Habits Summary', visible: true, size: 'sm', order: 2 },
       { id: 'focus_score', type: 'stats', label: 'Focus Score', visible: true, size: 'sm', order: 3 },
-      { id: 'market_pulse', type: 'trading', label: 'Market Snapshot', visible: true, size: 'sm', order: 4 },
-      { id: 'workout_snaps', type: 'workout', label: 'Workout Summary', visible: true, size: 'sm', order: 5 },
-      { id: 'lexicon_word', type: 'english', label: 'Word of the Day', visible: true, size: 'sm', order: 6 },
+      { id: 'market_pulse', type: 'watchlist', label: 'Market Pulse', visible: true, size: 'md', order: 4 },
+      { id: 'workout_snaps', type: 'quick_workout', label: 'Workout Pulse', visible: true, size: 'md', order: 5 },
+      { id: 'lexicon_word', type: 'lexicon_word', label: 'Word of the Day', visible: true, size: 'md', order: 6 },
     ]
   },
   'market': {
@@ -174,7 +183,7 @@ export const useWidgetStore = create<WidgetState>()(
             ...state.tabs,
             [tabId]: {
               ...tab,
-              widgets: tab.widgets.map(w => w.id === widgetId ? { ...w, size } : w)
+              widgets: tab.widgets.map(w => w.id === widgetId ? { ...w, size } : w),
             }
           }
         };
@@ -183,12 +192,25 @@ export const useWidgetStore = create<WidgetState>()(
       reorderWidgets: (tabId, widgetIds) => set((state) => {
         const tab = state.tabs[tabId];
         if (!tab) return state;
+
+        const orderedWidgets = widgetIds
+          .map((widgetId, index) => {
+            const widget = tab.widgets.find((candidate) => candidate.id === widgetId);
+            return widget ? { ...widget, order: index } : null;
+          })
+          .filter((widget): widget is WidgetConfig => widget !== null);
+
+        const remainingWidgets = tab.widgets
+          .filter((widget) => !widgetIds.includes(widget.id))
+          .sort((a, b) => a.order - b.order)
+          .map((widget, index) => ({ ...widget, order: orderedWidgets.length + index }));
+
         return {
           tabs: {
             ...state.tabs,
             [tabId]: {
               ...tab,
-              widgets: [...tab.widgets].sort((a, b) => widgetIds.indexOf(a.id) - widgetIds.indexOf(b.id))
+              widgets: [...orderedWidgets, ...remainingWidgets],
             }
           }
         };
@@ -204,6 +226,17 @@ export const useWidgetStore = create<WidgetState>()(
               ...tab,
               widgets: tab.widgets.map(w => w.id === widgetId ? { ...w, label: newLabel } : w)
             }
+          }
+        };
+      }),
+
+      resetTab: (tabId) => set((state) => {
+        const defaultTab = DEFAULT_TABS[tabId];
+        if (!defaultTab) return state;
+        return {
+          tabs: {
+            ...state.tabs,
+            [tabId]: cloneTab(defaultTab),
           }
         };
       }),
