@@ -91,7 +91,7 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
 
   return (
     <div className="space-y-4">
-      {actionError ? <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{actionError}</div> : null}
+      {actionError ? <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] px-4 py-3 text-sm text-slate-100">{actionError}</div> : null}
 
       {goals.map((goal) => {
         const isUpdating = updatingGoalId === goal.id;
@@ -99,21 +99,21 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
         const isBusy = isUpdating || isDeleting;
 
         return (
-          <GlassCard key={goal.id} className="border-white/5 bg-black/40 p-5 transition-colors duration-300 hover:border-red-500/20">
+          <GlassCard key={goal.id} className="border-white/8 bg-[rgba(255,255,255,0.02)] p-5 hover:border-white/14">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-lg font-black uppercase tracking-tight text-white">{goal.title}</h3>
-                  <span className={cn('rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em]', STATUS_STYLES[goal.status])}>
+                  <h3 className="text-xl font-semibold tracking-tight text-white">{goal.title}</h3>
+                  <span className={cn('rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]', STATUS_STYLES[goal.status])}>
                     {getGoalStatusLabel(goal.status)}
                   </span>
                 </div>
 
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">{goal.description || 'No additional description provided for this goal yet.'}</p>
+                <p className="mt-3 text-sm leading-relaxed text-white/60">{goal.description || 'No additional description provided for this goal yet.'}</p>
 
                 <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                       <Target size={12} />
                       Progress
                     </div>
@@ -122,7 +122,7 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
                   <div className="h-2 overflow-hidden rounded-full bg-white/10">
                     <div className="h-full rounded-full bg-red-500 transition-[width] duration-300" style={{ width: `${goal.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Updated {formatTimestamp(goal.updated_at)}</p>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Updated {formatTimestamp(goal.updated_at)}</p>
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2">
@@ -130,7 +130,7 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
                     type="button"
                     onClick={() => void handleProgressUpdate(goal, clampGoalProgress(goal.progress - 10))}
                     disabled={isBusy || goal.progress === 0}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    className="soft-action w-full disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     -10%
                   </button>
@@ -138,7 +138,7 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
                     type="button"
                     onClick={() => void handleProgressUpdate(goal, clampGoalProgress(goal.progress + 10))}
                     disabled={isBusy || goal.progress === 100}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    className="soft-action w-full disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     +10%
                   </button>
@@ -146,19 +146,19 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
                     type="button"
                     onClick={() => void handleProgressUpdate(goal, 100)}
                     disabled={isBusy || goal.progress === 100}
-                    className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-emerald-300 transition-colors hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300 transition-all duration-200 hover:scale-[1.02] hover:bg-emerald-500/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     {isUpdating ? <LoaderCircle size={14} className="inline animate-spin" /> : 'Mark Complete'}
                   </button>
                 </div>
               </div>
 
-              <div className="flex shrink-0 gap-3">
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
                 <button
                   type="button"
                   onClick={() => onEdit(goal)}
                   disabled={isBusy}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-black uppercase tracking-[0.2em] text-slate-300 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="soft-action w-full text-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   <Pencil size={14} />
                   Edit
@@ -168,7 +168,7 @@ export function GoalList({ goals, userId, onEdit }: GoalListProps) {
                   type="button"
                   onClick={() => void handleDelete(goal)}
                   disabled={isBusy}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-black uppercase tracking-[0.2em] text-red-300 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--shell-brand)] transition-all duration-200 hover:scale-[1.02] hover:bg-[rgba(240,90,61,0.14)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   {isDeleting ? <LoaderCircle size={14} className="animate-spin" /> : <Trash2 size={14} />}
                   Delete

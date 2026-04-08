@@ -1,6 +1,8 @@
 import { Download, FileText, History, LoaderCircle, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { exportCommandOsData, type CommandOsExportFormat } from './dailyReviewExport';
 import { useDailyReview } from './useDailyReview';
 
@@ -49,8 +51,8 @@ export function DailyReview() {
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
-          <LoaderCircle size={18} className="animate-spin text-red-500" />
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-white/60 backdrop-blur-xl">
+          <LoaderCircle size={18} className="animate-spin text-[var(--shell-brand)]" />
           Loading Daily Review
         </div>
       </div>
@@ -59,80 +61,70 @@ export function DailyReview() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-red-500/70">After Action Log</p>
-          <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-white">Daily Review</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-500">Write the day&apos;s review, let it auto-save, and keep a simple history of previous entries.</p>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => void handleExport('json')}
-            disabled={exportingFormat !== null}
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-sm font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Download size={16} />
-            {exportingFormat === 'json' ? 'Exporting JSON...' : 'Export JSON'}
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleExport('csv')}
-            disabled={exportingFormat !== null}
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-sm font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Download size={16} />
-            {exportingFormat === 'csv' ? 'Exporting CSV...' : 'Export CSV'}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="After Action Log"
+        title="Close the day with a record you can trust"
+        description="The daily review should stay simple: write what happened, let it auto-save, and keep enough history to notice patterns without turning journaling into homework."
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => void handleExport('json')}
+              disabled={exportingFormat !== null}
+              className="soft-action disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download size={16} />
+              {exportingFormat === 'json' ? 'Exporting JSON...' : 'Export JSON'}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleExport('csv')}
+              disabled={exportingFormat !== null}
+              className="soft-action disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download size={16} />
+              {exportingFormat === 'csv' ? 'Exporting CSV...' : 'Export CSV'}
+            </button>
+          </>
+        }
+      />
 
       {exportError ? (
-        <GlassCard className="border-red-500/20 bg-red-500/10 p-4">
-          <p className="text-sm leading-relaxed text-red-200/85">{exportError}</p>
+        <GlassCard className="border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] p-4">
+          <p className="text-sm leading-relaxed text-slate-100/85">{exportError}</p>
         </GlassCard>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Today</p>
-          <p className="mt-3 text-3xl font-black text-white">{todayEntry ? 'Reviewed' : 'No entry yet'}</p>
-        </GlassCard>
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">History Entries</p>
-          <p className="mt-3 text-3xl font-black text-white">{historyEntries.length}</p>
-        </GlassCard>
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Autosave</p>
-          <p className="mt-3 text-3xl font-black text-white">{autosaveLabel}</p>
-        </GlassCard>
+        <MetricCard label="Today" value={todayEntry ? 'Reviewed' : 'No entry yet'} description="Whether the current day already has a saved note." icon={FileText} tone="brand" />
+        <MetricCard label="History Entries" value={historyEntries.length} description="Saved entries from previous days." icon={History} tone="neutral" />
+        <MetricCard label="Autosave" value={autosaveLabel} description="Current persistence state for the editor." icon={Download} tone="success" />
       </div>
 
       {error ? (
-        <GlassCard className="border-red-500/20 bg-red-500/10 p-6">
+        <GlassCard className="border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] p-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-red-400">
+            <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.12)] p-3 text-[var(--shell-brand)]">
               <ShieldAlert size={18} />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-white">Daily Review Unavailable</h2>
-              <p className="mt-3 text-sm leading-relaxed text-red-200/80">{error}</p>
+              <h2 className="text-xl font-semibold tracking-[-0.03em] text-white">Daily review is unavailable right now</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-100/80">{error}</p>
             </div>
           </div>
         </GlassCard>
       ) : null}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <GlassCard className="border-white/5 bg-black/40 p-6">
+        <GlassCard className="border-white/8 bg-[rgba(255,255,255,0.02)] p-6">
           <div className="flex items-start gap-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-slate-300">
               <FileText size={18} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/70">Today&apos;s Review</p>
-              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">Write The Day Down</h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">This editor auto-saves after a short delay. Clearing it removes today&apos;s entry and returns the journal to the empty state.</p>
+              <p className="section-eyebrow">Today&apos;s Review</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">Write the day down</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">This editor auto-saves after a short delay. Clearing it removes today&apos;s entry and returns the journal to the empty state.</p>
             </div>
           </div>
 
@@ -140,36 +132,36 @@ export function DailyReview() {
             value={noteValue}
             onChange={(event) => saveEntry(event.target.value)}
             rows={14}
-            className="mt-6 w-full rounded-3xl border border-white/10 bg-black/50 p-4 text-sm text-white outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+            className="input-surface mt-6 min-h-[320px] rounded-2xl"
             placeholder="What happened today? What worked? What broke? What needs to improve tomorrow?"
           />
 
-          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             {autosaveLabel}
           </p>
         </GlassCard>
 
-        <GlassCard className="border-white/5 bg-black/40 p-6">
+        <GlassCard className="border-white/8 bg-[rgba(255,255,255,0.02)] p-6">
           <div className="flex items-start gap-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-slate-300">
               <History size={18} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/70">History</p>
-              <h2 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">Previous Days</h2>
+              <p className="section-eyebrow">History</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">Previous days</h2>
             </div>
           </div>
 
           {historyEntries.length === 0 ? (
-            <div className="mt-6 rounded-3xl border border-dashed border-white/10 bg-black/30 p-8 text-center">
-              <h3 className="text-xl font-black uppercase tracking-tight text-white">No Previous Entries</h3>
+            <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center">
+              <h3 className="text-xl font-semibold tracking-[-0.03em] text-white">No previous entries</h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-500">Today&apos;s review will show up here tomorrow, and every saved day will stay in this list.</p>
             </div>
           ) : (
             <div className="mt-6 space-y-3">
               {historyEntries.map((entry) => (
-                <div key={entry.date} className="rounded-3xl border border-white/5 bg-white/[0.03] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">{entry.date}</p>
+                <div key={entry.date} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{entry.date}</p>
                   <p className="mt-3 line-clamp-5 whitespace-pre-wrap text-sm leading-relaxed text-slate-300">{entry.note}</p>
                 </div>
               ))}

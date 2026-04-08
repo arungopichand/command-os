@@ -59,11 +59,11 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#020202] p-6 relative overflow-hidden font-sans">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--shell-bg)] p-6 font-sans">
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-900/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-zinc-900/40 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(76,106,255,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(240,90,61,0.14),transparent_22%),linear-gradient(180deg,#081018_0%,#060b10_44%,#04070b_100%)]" />
+        <div className="absolute left-[12%] top-[18%] h-80 w-80 rounded-full bg-[rgba(240,90,61,0.14)] blur-[120px]" />
+        <div className="absolute bottom-[10%] right-[12%] h-80 w-80 rounded-full bg-[rgba(76,106,255,0.1)] blur-[120px]" />
       </div>
 
       <motion.div
@@ -71,42 +71,42 @@ export function Auth() {
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-md w-full relative z-10"
       >
-        <GlassCard className="border-red-900/30 bg-black/80 shadow-[0_0_80px_rgba(220,38,38,0.15)] p-12 flex flex-col items-center border-t-8 border-t-red-600">
-          <div className="bg-red-950/20 p-5 rounded-3xl border border-red-900/30 mb-8 relative group">
-            <div className="absolute inset-0 bg-red-600/10 rounded-3xl blur-md group-hover:bg-red-600/20 transition-all" />
-            <Lock size={40} className="text-red-500 relative z-10" />
+        <GlassCard className="flex flex-col items-center p-8 sm:p-10">
+          <div className="relative mb-8 rounded-[28px] border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.14)] p-5 shadow-[0_20px_40px_rgba(240,90,61,0.14)]">
+            <Lock size={36} className="relative z-10 text-[color:var(--shell-brand)]" />
           </div>
 
-          <div className="text-center mb-10">
-            <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none mb-2">
-              COMMAND<span className="text-red-600">.</span>
+          <div className="mb-10 text-center">
+            <p className="section-eyebrow">Authorization</p>
+            <h1 className="mt-3 font-display text-5xl font-bold tracking-[-0.07em] text-white">
+              COMMAND.OS
             </h1>
-            <p className="text-[10px] text-red-500/60 uppercase tracking-[0.4em] font-black">
-              Neural Interface: Authorization Required
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Sign in to return to the command surface, or create the first account for this install.
             </p>
           </div>
 
           <form onSubmit={handleAuth} className="w-full space-y-5">
             <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-600 uppercase tracking-widest ml-4">Credentials: Email ID</label>
+              <label className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Email</label>
               <input
                 type="email"
                 placeholder="name@command.os"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/40 border border-red-900/20 rounded-2xl px-6 py-4 text-white placeholder-slate-800 focus:outline-none focus:border-red-500/50 focus:bg-black transition-all"
+                className="input-surface"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-600 uppercase tracking-widest ml-4">Passphrase: Key-Code</label>
+              <label className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Password</label>
               <input
                 type="password"
                 placeholder="************"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/40 border border-red-900/20 rounded-2xl px-6 py-4 text-white placeholder-slate-800 focus:outline-none focus:border-red-500/50 focus:bg-black transition-all"
+                className="input-surface"
                 required
               />
             </div>
@@ -116,10 +116,10 @@ export function Auth() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-3 p-4 bg-red-950/20 border border-red-500/30 rounded-2xl"
+                  className="flex items-center gap-3 rounded-[22px] border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.1)] p-4"
                 >
-                  <ShieldAlert size={16} className="text-red-500 shrink-0" />
-                  <p className="text-[10px] text-red-400 font-black uppercase tracking-widest leading-tight">
+                  <ShieldAlert size={16} className="shrink-0 text-[color:var(--shell-brand)]" />
+                  <p className="text-[11px] font-semibold leading-tight text-slate-200">
                     {errorMsg}
                   </p>
                 </motion.div>
@@ -129,35 +129,36 @@ export function Auth() {
             <button
               disabled={loading}
               type="submit"
-              className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-950 disabled:opacity-50 text-white font-black tracking-[0.3em] uppercase px-8 py-5 rounded-2xl mt-6 shadow-[0_15px_30px_rgba(220,38,38,0.3)] hover:shadow-[0_20px_40px_rgba(220,38,38,0.4)] hover:-translate-y-1 transition-all flex justify-center items-center gap-3"
+              className="primary-action mt-2 w-full justify-center py-4 disabled:opacity-60"
             >
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  <span>Decrypting...</span>
+                  <span>Authenticating...</span>
                 </>
               ) : (
                 <>
                   <Zap size={18} fill="currentColor" />
-                  <span>{isLogin ? 'Establish Link' : 'Initialize Core'}</span>
+                  <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
                 </>
               )}
             </button>
           </form>
 
           <button
+            type="button"
             onClick={() => {
               setIsLogin(!isLogin);
               setErrorMsg('');
             }}
-            className="mt-10 text-[10px] text-slate-600 hover:text-red-400 uppercase tracking-[0.2em] font-black transition-colors"
+            className="mt-8 text-sm font-semibold text-slate-400 transition-colors hover:text-white"
           >
-            {isLogin ? 'No active protocol? Register new unit.' : 'Unit already initialized? Login here.'}
+            {isLogin ? 'No account yet? Create one.' : 'Already have an account? Sign in.'}
           </button>
         </GlassCard>
 
-        <p className="mt-8 text-center text-slate-800 text-[8px] font-black tracking-[0.5em] uppercase">
-          Encryption Level: MIL-SPEC AES-256-GCM
+        <p className="mt-6 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          Secure local workspace
         </p>
       </motion.div>
     </div>

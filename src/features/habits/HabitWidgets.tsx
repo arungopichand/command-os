@@ -9,8 +9,8 @@ export function HabitSummaryWidget() {
   if (isLoading) {
     return (
       <div className="flex h-full min-h-[180px] items-center justify-center">
-        <div className="flex items-center gap-3 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
-          <LoaderCircle size={18} className="animate-spin text-red-500" />
+        <div className="flex items-center gap-3 text-sm font-semibold text-slate-400">
+          <LoaderCircle size={18} className="animate-spin text-[var(--shell-brand)]" />
           Loading Habits
         </div>
       </div>
@@ -19,12 +19,12 @@ export function HabitSummaryWidget() {
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-500/20 bg-red-500/10 p-5">
+      <div className="rounded-[24px] border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.1)] p-5">
         <div className="flex items-start gap-3">
-          <ShieldAlert size={18} className="mt-0.5 shrink-0 text-red-400" />
+          <ShieldAlert size={18} className="mt-0.5 shrink-0 text-[color:var(--shell-brand)]" />
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-300">Habit Data Error</p>
-            <p className="mt-2 text-sm text-red-100/90">{error}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--shell-brand)]">Habit data unavailable</p>
+            <p className="mt-2 text-sm text-slate-200">{error}</p>
           </div>
         </div>
       </div>
@@ -33,10 +33,10 @@ export function HabitSummaryWidget() {
 
   if (summary.totalHabits === 0) {
     return (
-      <div className="flex h-full min-h-[180px] flex-col justify-between rounded-3xl border border-dashed border-white/10 bg-white/[0.02] p-5">
+      <div className="flex h-full min-h-[180px] flex-col justify-between rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-5">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Habits Summary</p>
-          <p className="mt-3 text-2xl font-black uppercase tracking-tight text-white">No Habits Yet</p>
+          <p className="section-eyebrow">Habits Summary</p>
+          <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">No habits yet</p>
         </div>
         <p className="text-xs leading-relaxed text-slate-500">Create a habit in the habits module to start tracking progress.</p>
       </div>
@@ -47,34 +47,34 @@ export function HabitSummaryWidget() {
     <div className="space-y-5">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Today Completion</p>
-          <p className="mt-2 text-4xl font-black text-white">{summary.completionPercent}%</p>
+          <p className="section-eyebrow">Today Completion</p>
+          <p className="metric-value mt-3 text-4xl">{summary.completionPercent}%</p>
         </div>
-        <div className="rounded-3xl bg-white/5 px-4 py-3 text-right">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Completed</p>
-          <p className="mt-2 text-xl font-black text-white">{summary.completedToday}/{summary.totalHabits}</p>
+        <div className="rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-3 text-right">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Completed</p>
+          <p className="mt-2 text-xl font-semibold text-white">{summary.completedToday}/{summary.totalHabits}</p>
         </div>
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-white/5">
+      <div className="h-3 overflow-hidden rounded-full bg-white/10">
         <div className="h-full rounded-full bg-emerald-500" style={{ width: `${summary.completionPercent}%` }} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-3xl border border-white/5 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-amber-400">
+        <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
             <Flame size={12} />
             Best Streak
           </div>
-          <p className="mt-3 text-2xl font-black text-white">{formatStreakLabel(summary.longestCurrentStreak)}</p>
+          <p className="mt-3 text-2xl font-semibold text-white">{formatStreakLabel(summary.longestCurrentStreak)}</p>
         </div>
 
-        <div className="rounded-3xl border border-white/5 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-emerald-400">
+        <div className="rounded-[22px] border border-white/8 bg-white/[0.03] p-4">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
             <CheckCircle2 size={12} />
             Total Wins
           </div>
-          <p className="mt-3 text-2xl font-black text-white">{summary.totalCompletions}</p>
+          <p className="mt-3 text-2xl font-semibold text-white">{summary.totalCompletions}</p>
         </div>
       </div>
     </div>
@@ -87,8 +87,8 @@ export function HabitPrioritiesWidget() {
   if (isLoading) {
     return (
       <div className="flex h-full min-h-[180px] items-center justify-center">
-        <div className="flex items-center gap-3 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
-          <LoaderCircle size={18} className="animate-spin text-red-500" />
+        <div className="flex items-center gap-3 text-sm font-semibold text-slate-400">
+          <LoaderCircle size={18} className="animate-spin text-[var(--shell-brand)]" />
           Loading Habits
         </div>
       </div>
@@ -97,19 +97,19 @@ export function HabitPrioritiesWidget() {
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-500/20 bg-red-500/10 p-5">
-        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-red-300">Habit Data Error</p>
-        <p className="mt-3 text-sm text-red-100/90">{error}</p>
+      <div className="rounded-[24px] border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.1)] p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--shell-brand)]">Habit data unavailable</p>
+        <p className="mt-3 text-sm text-slate-200">{error}</p>
       </div>
     );
   }
 
   if (todayChecklist.length === 0) {
     return (
-      <div className="flex h-full min-h-[180px] flex-col justify-between rounded-3xl border border-dashed border-white/10 bg-white/[0.02] p-5">
+      <div className="flex h-full min-h-[180px] flex-col justify-between rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-5">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Today&apos;s Habits</p>
-          <p className="mt-3 text-2xl font-black uppercase tracking-tight text-white">No Habits Yet</p>
+          <p className="section-eyebrow">Today&apos;s Habits</p>
+          <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">No habits yet</p>
         </div>
         <p className="text-xs leading-relaxed text-slate-500">Open the habits module and create the first habit.</p>
       </div>
@@ -122,7 +122,7 @@ export function HabitPrioritiesWidget() {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Today&apos;s Habits</p>
+        <p className="section-eyebrow">Today&apos;s Habits</p>
         <p className="mt-2 text-sm text-slate-400">Quick checklist for the current day.</p>
       </div>
 
@@ -134,19 +134,19 @@ export function HabitPrioritiesWidget() {
             <button
               key={habit.id}
               type="button"
-              onClick={() => void toggleHabit(habit.id)}
-              disabled={isPending}
-              className={cn(
-                'flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all',
+            onClick={() => void toggleHabit(habit.id)}
+            disabled={isPending}
+            className={cn(
+                'flex w-full items-center justify-between gap-3 rounded-[22px] border px-4 py-4 text-left transition-all',
                 habit.completedToday
-                  ? 'border-emerald-500/30 bg-emerald-500/10 text-white'
-                  : 'border-white/5 bg-white/[0.03] text-slate-200 hover:bg-white/[0.06]',
+                  ? 'border-emerald-500/18 bg-emerald-500/10 text-white'
+                  : 'border-white/8 bg-white/[0.03] text-slate-200 hover:bg-white/[0.06]',
                 isPending && 'cursor-not-allowed opacity-60',
               )}
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-black uppercase tracking-[0.16em] text-white">{habit.name}</p>
-                <p className="mt-2 text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">{formatStreakLabel(habit.streak)}</p>
+                <p className="truncate text-sm font-semibold text-white">{habit.name}</p>
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{formatStreakLabel(habit.streak)}</p>
               </div>
               {habit.completedToday ? <CheckCircle2 size={18} className="shrink-0 text-emerald-400" /> : <div className="h-4 w-4 shrink-0 rounded-full border border-white/20" />}
             </button>
@@ -155,7 +155,7 @@ export function HabitPrioritiesWidget() {
       </div>
 
       {remainingCount > 0 ? (
-        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">+{remainingCount} more habit{remainingCount === 1 ? '' : 's'} in the habits module</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">+{remainingCount} more habit{remainingCount === 1 ? '' : 's'} in the habits module</p>
       ) : null}
     </div>
   );

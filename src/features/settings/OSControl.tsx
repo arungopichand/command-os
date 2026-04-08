@@ -1,123 +1,187 @@
-import { 
-  Settings, Layout, Eye, EyeOff, 
-  RefreshCw, Cloud, ShieldCheck, 
-  ToggleLeft, ToggleRight, Save
+import {
+  Cloud,
+  Eye,
+  EyeOff,
+  Layout,
+  Settings,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { useWidgetStore } from '../../store/useWidgetStore';
 import { cn } from '../../utils/cn';
+import { exportData } from '../../utils/exportData';
 
 export function OSControl() {
   const { tabs, toggleWidget } = useWidgetStore();
+  const tabList = Object.values(tabs);
+  const totalWidgets = tabList.reduce((sum, tab) => sum + tab.widgets.length, 0);
+  const visibleWidgets = tabList.reduce((sum, tab) => sum + tab.widgets.filter((widget) => widget.visible).length, 0);
+  const hiddenWidgets = totalWidgets - visibleWidgets;
 
   return (
-    <div className="space-y-10">
-      {/* Prime Control Header */}
-      <div className="flex justify-between items-center bg-black/60 backdrop-blur-xl border border-white/5 px-8 py-6 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center gap-5">
-           <div className="p-4 bg-red-600 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.3)]">
-             <Settings size={28} className="text-white" />
-           </div>
-           <div>
-             <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">OS CONTROL</h2>
-             <p className="text-[10px] text-red-500 font-black uppercase tracking-[0.5em] mt-3">Tactical Configuration Interface</p>
-           </div>
-        </div>
-        <div className="flex items-center gap-4">
-           <div className="bg-emerald-500/10 border border-emerald-500/20 px-6 py-3 rounded-2xl flex items-center gap-3">
-              <Cloud size={16} className="text-emerald-500" />
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Supabase Sync: ACTIVE</span>
-           </div>
-           <button className="p-4 bg-white/5 text-slate-500 hover:text-white rounded-2xl border border-white/5 transition-all">
-             <RefreshCw size={18} />
-           </button>
-        </div>
+    <div className="space-y-8 md:space-y-10">
+      <PageHeader
+        eyebrow="OS Control"
+        title="Shape the dashboard without turning it into noise"
+        description="This is where COMMAND.OS gets edited back into focus. Keep the command center lean, promote the widgets that matter daily, and hide the rest until they earn their space."
+        meta={(
+          <>
+            <div className="rounded-full border border-white/8 bg-white/[0.03] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+              {tabList.length} surfaces
+            </div>
+            <div className="rounded-full border border-emerald-500/18 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              Sync active
+            </div>
+          </>
+        )}
+        actions={(
+          <button type="button" className="soft-action" onClick={exportData}>
+            <Cloud size={14} />
+            Export Snapshot
+          </button>
+        )}
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Surfaces"
+          value={tabList.length}
+          description="Total dashboard pages currently configured."
+          icon={Settings}
+          tone="brand"
+        />
+        <MetricCard
+          label="Visible Widgets"
+          value={visibleWidgets}
+          description="Widgets currently available in normal view."
+          icon={Eye}
+          tone="success"
+        />
+        <MetricCard
+          label="Hidden Widgets"
+          value={hiddenWidgets}
+          description="Useful for staging or lowering visual noise."
+          icon={EyeOff}
+          tone={hiddenWidgets > 0 ? 'warning' : 'neutral'}
+        />
+        <MetricCard
+          label="Persistence"
+          value="Live"
+          description="Widget preferences stay stored between sessions."
+          icon={Cloud}
+          tone="neutral"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Module Visibility Controller */}
-        <GlassCard className="col-span-2 border-white/5 bg-black/40 p-8">
-           <div className="flex items-center gap-3 mb-10">
-              <Layout size={20} className="text-red-500" />
-              <h3 className="text-sm font-black text-white uppercase tracking-[0.3em]">Module Visibility Engine</h3>
-           </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+        <GlassCard className="p-6 md:p-7">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="section-eyebrow">Visibility</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">Control each surface directly</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+                Hide anything that feels decorative, repetitive, or low-value. The best dashboard is the one you can trust at a glance.
+              </p>
+            </div>
+            <Layout size={18} className="text-[var(--shell-brand)]" />
+          </div>
 
-           <div className="space-y-10">
-              {Object.values(tabs).map((tab) => (
-                <div key={tab.id} className="space-y-6">
-                   <div className="flex items-center gap-4 pb-4 border-b border-white/5">
-                      <div className="w-1 h-4 bg-red-600 rounded-full" />
-                      <h4 className="text-xs font-black text-slate-300 uppercase tracking-widest">{tab.label}</h4>
-                   </div>
-                   
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {tab.widgets.map((widget) => (
-                        <button
-                          key={widget.id}
-                          onClick={() => toggleWidget(tab.id, widget.id)}
-                          className={cn(
-                            "flex items-center justify-between p-5 rounded-2xl border transition-all group",
-                            widget.visible ? "bg-white/[0.03] border-white/10 text-white" : "bg-black/60 border-white/5 text-slate-600"
-                          )}
-                        >
-                           <div className="flex items-center gap-4">
-                              <div className={cn("p-2 rounded-lg transition-colors", widget.visible ? "bg-red-600/10 text-red-500" : "bg-white/5")}>
-                                 {widget.visible ? <Eye size={16} /> : <EyeOff size={16} />}
-                              </div>
-                              <span className="text-[10px] font-black uppercase tracking-widest">{widget.label}</span>
-                           </div>
-                           {widget.visible ? <ToggleRight className="text-red-500" size={24} /> : <ToggleLeft size={24} />}
-                        </button>
-                      ))}
-                   </div>
+          <div className="mt-7 space-y-6">
+            {tabList.map((tab) => (
+              <div key={tab.id} className="rounded-[28px] border border-white/8 bg-white/[0.02] p-5">
+                <div className="flex flex-col gap-3 border-b border-white/8 pb-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">{tab.label}</p>
+                    <p className="mt-2 text-sm text-slate-400">
+                      {tab.widgets.filter((widget) => widget.visible).length}/{tab.widgets.length} widgets visible
+                    </p>
+                  </div>
+                  <div className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    {tab.id}
+                  </div>
                 </div>
-              ))}
-           </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {tab.widgets.map((widget) => (
+                    <button
+                      key={widget.id}
+                      type="button"
+                      onClick={() => toggleWidget(tab.id, widget.id)}
+                      className={cn(
+                        'flex items-center justify-between rounded-[22px] border px-4 py-4 text-left transition-all',
+                        widget.visible
+                          ? 'border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.1)] text-white'
+                          : 'border-white/8 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]',
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn('rounded-2xl border p-2.5', widget.visible ? 'border-[rgba(240,90,61,0.18)] bg-white/[0.04] text-[var(--shell-brand)]' : 'border-white/8 bg-white/[0.03] text-slate-500')}>
+                          {widget.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{widget.label}</p>
+                          <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{widget.size}</p>
+                        </div>
+                      </div>
+                      {widget.visible ? <ToggleRight size={22} className="text-[var(--shell-brand)]" /> : <ToggleLeft size={22} className="text-slate-500" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </GlassCard>
 
-        {/* Global Tactical Presets */}
-        <div className="space-y-8">
-           <GlassCard className="border-red-500/20 bg-red-950/10">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500 mb-8 flex items-center gap-2">
-                 <ShieldCheck size={14} /> Mission Presets
-              </h3>
-              <div className="space-y-4">
-                 <button className="w-full py-5 px-6 bg-red-600 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-[0_10px_30px_rgba(220,38,38,0.3)] hover:scale-105 transition-all text-left flex justify-between items-center">
-                    TRADING PROTOCOL
-                    <Save size={14} className="opacity-50" />
-                 </button>
-                 <button className="w-full py-5 px-6 bg-white/5 border border-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all text-left">
-                    DEEP FOCUS SPRINT
-                 </button>
-                 <button className="w-full py-5 px-6 bg-white/5 border border-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all text-left">
-                    PHYSICAL RECON
-                 </button>
+        <div className="space-y-6">
+          <GlassCard className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="section-eyebrow">Guidance</p>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">What a stronger v1 looks like</h2>
               </div>
-           </GlassCard>
+              <ShieldCheck size={18} className="text-[var(--shell-brand)]" />
+            </div>
 
-           <GlassCard className="border-emerald-500/10 bg-black/40">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 mb-6 flex items-center gap-2">
-                 <Cloud size={14} /> Synchronization Intelligence
-              </h3>
-              <p className="text-[10px] text-slate-500 font-bold leading-relaxed mb-6">
-                All tactical configurations are synchronized to the <span className="text-white">Supabase Global Grid</span>. Changes persist across all authorized devices instantly.
-              </p>
-              <div className="space-y-3">
-                 <div className="flex justify-between items-center p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span className="text-[9px] font-black uppercase text-slate-400">Realtime Engine</span>
-                    <span className="text-[9px] font-black uppercase text-emerald-500">Connected</span>
-                 </div>
-                 <div className="flex justify-between items-center p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span className="text-[9px] font-black uppercase text-slate-400">Tactical Backup</span>
-                    <span className="text-[9px] font-black uppercase text-slate-600">Pending</span>
-                 </div>
+            <div className="mt-6 space-y-4">
+              {[
+                'Keep the Command Center centered on habits, focus, goals, daily review, and alerts.',
+                'Use large widgets only when the workflow itself needs full-page attention.',
+                'Hide secondary modules until their content quality matches the core surfaces.',
+                'Prefer fewer widgets with stronger signal over crowded dashboards.',
+              ].map((item) => (
+                <div key={item} className="rounded-[22px] border border-white/8 bg-white/[0.03] px-4 py-4 text-sm leading-relaxed text-slate-300">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <p className="section-eyebrow">Sync State</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">Persistence is local-first</h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Widget visibility, labels, and sizes are stored in the browser so the interface feels consistent each time you return.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center justify-between rounded-[20px] border border-white/8 bg-white/[0.03] px-4 py-4">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Realtime sync</span>
+                <span className="text-sm font-semibold text-emerald-300">Ready</span>
               </div>
-           </GlassCard>
-
-           <div className="p-10 border border-white/10 rounded-[3rem] bg-white/[0.01] flex flex-col items-center text-center opacity-40">
-              <ShieldCheck size={48} className="text-slate-600 mb-6" />
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">Command Grade Encryption</p>
-           </div>
+              <div className="flex items-center justify-between rounded-[20px] border border-white/8 bg-white/[0.03] px-4 py-4">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Layout memory</span>
+                <span className="text-sm font-semibold text-white">Persisted</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[20px] border border-white/8 bg-white/[0.03] px-4 py-4">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Next priority</span>
+                <span className="text-sm font-semibold text-white">Widget refinement</span>
+              </div>
+            </div>
+          </GlassCard>
         </div>
       </div>
     </div>
