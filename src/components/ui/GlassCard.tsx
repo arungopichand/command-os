@@ -1,15 +1,17 @@
-import React from 'react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { cn } from '../../utils/cn';
 
-// Helper to gracefully merge tailwind classes
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+type GlassCardProps = {
+  children: ReactNode;
+  className?: string;
+} & ComponentPropsWithoutRef<'div'>;
 
-export function GlassCard({ children, className }: { children: React.ReactNode, className?: string }) {
+export function GlassCard({ children, className, ...props }: GlassCardProps) {
   return (
-    <div className={cn("glass-panel rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:bg-white/10", className)}>
+    <div
+      className={cn("glass-panel rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:bg-white/10", className)}
+      {...props}
+    >
       {children}
     </div>
   );

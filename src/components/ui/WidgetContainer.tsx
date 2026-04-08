@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings2, Maximize2, Minimize2, X, GripVertical, Edit3 } from 'lucide-react';
-import { GlassCard, cn } from './GlassCard';
+import { Settings2, X, GripVertical, Edit3 } from 'lucide-react';
+import { GlassCard } from './GlassCard';
 import { useWidgetStore, type WidgetSize } from '../../store/useWidgetStore';
+import { cn } from '../../utils/cn';
 
 interface WidgetContainerProps {
   tabId: string;

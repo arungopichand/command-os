@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Droplet, Plus, Trash2, CheckCircle, Circle, Target } from 'lucide-react';
+import { Droplet, Trash2, CheckCircle, Circle, Target } from 'lucide-react';
 import { generateUUID } from '../../utils/uuid';
 import { motion, AnimatePresence } from 'framer-motion';
 

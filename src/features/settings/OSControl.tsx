@@ -1,15 +1,14 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Settings, Layout, Eye, EyeOff, 
   RefreshCw, Cloud, ShieldCheck, 
   ToggleLeft, ToggleRight, Save
 } from 'lucide-react';
-import { GlassCard, cn } from '../../components/ui/GlassCard';
+import { GlassCard } from '../../components/ui/GlassCard';
 import { useWidgetStore } from '../../store/useWidgetStore';
+import { cn } from '../../utils/cn';
 
 export function OSControl() {
-  const { tabs, toggleWidget, setActiveTab, activeTabId } = useWidgetStore();
+  const { tabs, toggleWidget } = useWidgetStore();
 
   return (
     <div className="space-y-10">

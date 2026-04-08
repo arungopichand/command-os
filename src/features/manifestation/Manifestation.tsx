@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { generateUUID } from '../../utils/uuid';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Sparkles, Plus, Trash2, Crosshair } from 'lucide-react';
+import { Plus, Trash2, Crosshair } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Manifestation() {

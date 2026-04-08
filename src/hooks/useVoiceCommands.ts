@@ -5,22 +5,57 @@ interface VoiceCommandOptions {
   enabled?: boolean;
 }
 
+interface SpeechRecognitionAlternativeLike {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultLike {
+  0: SpeechRecognitionAlternativeLike;
+}
+
+interface SpeechRecognitionEventLike {
+  results: SpeechRecognitionResultLike[];
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance;
+}
+
+type SpeechRecognitionWindow = Window &
+  typeof globalThis & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
+
 export function useVoiceCommands({ onCommand, enabled = true }: VoiceCommandOptions) {
+  const SpeechRecognitionCtor =
+    (window as SpeechRecognitionWindow).SpeechRecognition ||
+    (window as SpeechRecognitionWindow).webkitSpeechRecognition;
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [supported, setSupported] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const supported = Boolean(SpeechRecognitionCtor);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setSupported(true);
-      const recognition = new SpeechRecognition();
+    if (SpeechRecognitionCtor) {
+      const recognition = new SpeechRecognitionCtor();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         const text = event.results[0][0].transcript.toLowerCase().trim();
         setTranscript(text);
         onCommand(text);
@@ -32,7 +67,7 @@ export function useVoiceCommands({ onCommand, enabled = true }: VoiceCommandOpti
 
       recognitionRef.current = recognition;
     }
-  }, [onCommand]);
+  }, [SpeechRecognitionCtor, onCommand]);
 
   const startListening = useCallback(() => {
     if (!enabled || !supported || !recognitionRef.current) return;

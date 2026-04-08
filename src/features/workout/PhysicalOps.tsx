@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { 
-  Dumbbell, Flame, Trophy, 
-  RotateCcw, Activity, Info,
+  Flame, Trophy,
+  RotateCcw,
   CheckCircle2, Circle, Home, Sword
 } from 'lucide-react';
-import { GlassCard, cn } from '../../components/ui/GlassCard';
-import { useAppStore } from '../../store/useAppStore';
+import { GlassCard } from '../../components/ui/GlassCard';
+import { cn } from '../../utils/cn';
 
 // --- Sub-Component: Daily Protocol ---
 function DailyProtocol() {

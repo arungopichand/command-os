@@ -1,17 +1,52 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import type { LucideIcon } from 'lucide-react';
 import { 
   Activity, Wallet, Dumbbell, Timer, 
   ShieldCheck, Zap, Target, PencilLine, 
-  Layers, ChevronRight, TrendingUp, Shield,
+  Layers, Shield,
   ArrowUpRight, AlertCircle, CheckCircle2,
-  Flame, Sparkles, BookOpen
 } from 'lucide-react';
-import { GlassCard, cn } from '../../components/ui/GlassCard';
+import { GlassCard } from '../../components/ui/GlassCard';
 import { useAppStore } from '../../store/useAppStore';
+import { cn } from '../../utils/cn';
+import { useCommandCenterMetrics } from './useCommandCenterMetrics';
 
-const STRATEGIC_SECTORS = [
+interface StrategicSector {
+  id: string;
+  path: string;
+  label: string;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+  border: string;
+  desc: string;
+}
+
+const STATUS_STYLES = {
+  ready: {
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-400',
+  },
+  empty: {
+    dot: 'bg-slate-600',
+    text: 'text-slate-400',
+  },
+  loading: {
+    dot: 'bg-amber-500',
+    text: 'text-amber-300',
+  },
+  error: {
+    dot: 'bg-red-500',
+    text: 'text-red-400',
+  },
+} as const;
+
+function pluralize(value: number, singular: string, plural = `${singular}s`) {
+  return `${value} ${value === 1 ? singular : plural}`;
+}
+
+const STRATEGIC_SECTORS: StrategicSector[] = [
   { 
     id: 'command', 
     path: '/', 
@@ -20,7 +55,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-red-500', 
     bg: 'bg-red-500/10',
     border: 'border-red-500/20',
-    kpi: 'Status: Optimal',
     desc: 'Primary Tactical HUD'
   },
   { 
@@ -31,7 +65,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-emerald-500', 
     bg: 'bg-emerald-500/10',
     border: 'border-emerald-500/20',
-    kpi: '+2.4% Alpha',
     desc: 'Wealth & Asset Intel'
   },
   { 
@@ -42,7 +75,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-cyan-500', 
     bg: 'bg-cyan-600/10',
     border: 'border-cyan-500/20',
-    kpi: '14 Day Streak',
     desc: 'Operational Readiness'
   },
   { 
@@ -53,7 +85,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-fuchsia-500', 
     bg: 'bg-fuchsia-500/10',
     border: 'border-fuchsia-500/20',
-    kpi: 'Mastery: 84%',
     desc: 'Lexicon Intelligence'
   },
   { 
@@ -64,7 +95,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-amber-500', 
     bg: 'bg-amber-500/10',
     border: 'border-amber-500/20',
-    kpi: 'Compliance: 92%',
     desc: 'Behavioral Protocols'
   },
   { 
@@ -75,7 +105,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-violet-500', 
     bg: 'bg-violet-500/10',
     border: 'border-violet-500/20',
-    kpi: 'Active Focus Lock',
     desc: 'Cognitive Sprint'
   },
   { 
@@ -86,7 +115,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-blue-500', 
     bg: 'bg-blue-500/10',
     border: 'border-blue-500/20',
-    kpi: '3 Active Missions',
     desc: 'Strategic Trajectory'
   },
   { 
@@ -97,7 +125,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-slate-400', 
     bg: 'bg-white/5',
     border: 'border-white/10',
-    kpi: 'Daily Log: Verified',
     desc: 'Historical Recon'
   },
   { 
@@ -108,7 +135,6 @@ const STRATEGIC_SECTORS = [
     color: 'text-red-600', 
     bg: 'bg-red-600/5',
     border: 'border-red-600/20',
-    kpi: 'Uplink: Synchronized',
     desc: 'System Configuration'
   }
 ];
@@ -116,6 +142,15 @@ const STRATEGIC_SECTORS = [
 export function WarRoom() {
   const navigate = useNavigate();
   const { totalXP } = useAppStore();
+  const { sectors, summary } = useCommandCenterMetrics();
+
+  const footerMessage = summary.errorCount > 0
+    ? `${pluralize(summary.errorCount, 'sector')} need attention before the dashboard is fully trustworthy.`
+    : summary.loadingCount > 0
+      ? `Syncing ${pluralize(summary.loadingCount, 'sector')} for the latest dashboard state.`
+      : summary.readyCount > 0
+        ? `COMMAND.OS is reporting live data across ${pluralize(summary.readyCount, 'sector')}.`
+        : 'No dashboard data yet. Start with goals, habits, focus, journal, or alerts.';
 
   return (
     <div className="space-y-12">
@@ -130,7 +165,7 @@ export function WarRoom() {
               COMMAND CENTER
            </h1>
            <div className="flex items-center gap-6">
-              <p className="text-slate-500 text-sm font-bold uppercase tracking-widest indent-2">Mission Parameters: <span className="text-white">Active</span></p>
+              <p className="text-slate-500 text-sm font-bold uppercase tracking-widest indent-2">{summary.missionLabel}</p>
               <div className="h-px w-24 bg-red-600/30" />
               <div className="flex items-center gap-2">
                  <Zap size={14} className="text-amber-500 fill-amber-500" />
@@ -141,8 +176,9 @@ export function WarRoom() {
         
         <div className="bg-red-600/10 border border-red-600/30 px-8 py-5 rounded-3xl flex items-center gap-6 group cursor-default">
            <div className="text-right">
-              <p className="text-[8px] text-red-500 font-black uppercase tracking-widest leading-none">Global Synchronization</p>
-              <p className="text-lg font-black text-white mt-1">UPLINK STABLE</p>
+              <p className="text-[8px] text-red-500 font-black uppercase tracking-widest leading-none">Dashboard Truth</p>
+              <p className="text-lg font-black text-white mt-1">{summary.uplinkStatus}</p>
+              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.28em] text-red-200/70">{summary.uplinkDetail}</p>
            </div>
            <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.3)]">
               <Activity size={24} className="text-white animate-pulse" />
@@ -188,9 +224,9 @@ export function WarRoom() {
                {/* Sector KPI Bar */}
                <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                     <div className={cn("w-1.5 h-1.5 rounded-full", sector.id === 'settings' ? 'bg-slate-700' : 'bg-emerald-500')} />
-                     <span className={cn("text-[10px] font-black uppercase tracking-widest", sector.id === 'settings' ? 'text-slate-600' : 'text-emerald-500')}>
-                        {sector.kpi}
+                     <div className={cn("w-1.5 h-1.5 rounded-full", STATUS_STYLES[sectors[sector.id].status].dot)} />
+                     <span className={cn("text-[10px] font-black uppercase tracking-widest", STATUS_STYLES[sectors[sector.id].status].text)}>
+                        {sectors[sector.id].label}
                      </span>
                   </div>
                   <span className="text-[8px] font-black text-slate-800 uppercase tracking-widest group-hover:text-slate-600 transition-colors">DEPLOY SECTOR</span>
@@ -213,17 +249,19 @@ export function WarRoom() {
             </div>
             <div>
                <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Integrated Intelligence</p>
-               <p className="text-white font-bold text-sm mt-1">COMMAND.OS IS TRACKING 14 ACTIVE METRICS ACROSS ALL SECTORS.</p>
+               <p className="text-white font-bold text-sm mt-1">{footerMessage}</p>
             </div>
          </div>
          <div className="flex gap-4">
             <div className="px-6 py-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
                <CheckCircle2 size={16} className="text-emerald-500" />
-               <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">ALL CORES STABLE</span>
+               <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">{pluralize(summary.readyCount, 'sector')} live</span>
             </div>
             <div className="px-6 py-3 bg-red-600/5 border border-red-600/20 rounded-2xl flex items-center gap-3">
                <ShieldCheck size={16} className="text-red-500" />
-               <span className="text-[9px] font-black text-red-400 uppercase tracking-[0.3em]">PROTOCOLS VERIFIED</span>
+               <span className="text-[9px] font-black text-red-400 uppercase tracking-[0.3em]">
+                  {summary.errorCount > 0 ? `${pluralize(summary.errorCount, 'issue')} open` : `${pluralize(summary.emptyCount, 'sector')} awaiting setup`}
+               </span>
             </div>
          </div>
       </div>

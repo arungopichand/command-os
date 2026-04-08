@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 // import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { generateUUID } from '../../utils/uuid';
-import { Plus, Trash2, BookOpen, Video, BrainCircuit } from 'lucide-react';
+import { Trash2, BookOpen, Video, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Learning() {

@@ -1,19 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 import { 
   TrendingUp, TrendingDown, Target, 
-  ShieldAlert, Activity, BarChart3, 
-  Wallet, RefreshCcw, Eye
+  ShieldAlert,
+  Wallet, RefreshCcw
 } from 'lucide-react';
-import { GlassCard, cn } from '../../components/ui/GlassCard';
-import { useAppStore } from '../../store/useAppStore';
+import { GlassCard } from '../../components/ui/GlassCard';
+import { cn } from '../../utils/cn';
 
 // --- Sub-Component: TradingView Chart ---
 function AdvancedChart() {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!container.current) return;
+    const node = container.current;
+    if (!node) return;
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
@@ -30,8 +30,10 @@ function AdvancedChart() {
       "calendar": false,
       "support_host": "https://www.tradingview.com"
     });
-    container.current.appendChild(script);
-    return () => { if (container.current) container.current.innerHTML = ''; };
+    node.appendChild(script);
+    return () => {
+      node.innerHTML = '';
+    };
   }, []);
 
   return (

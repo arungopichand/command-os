@@ -30,14 +30,50 @@ interface WidgetState {
   renameWidget: (tabId: string, widgetId: string, newLabel: string) => void;
 }
 
+function normalizeTabs(tabs?: Record<string, TabConfig>) {
+  const mergeTab = (defaultTab: TabConfig, persistedTab?: TabConfig): TabConfig => {
+    if (!persistedTab) {
+      return defaultTab;
+    }
+
+    const persistedWidgets = new Map(persistedTab.widgets.map((widget) => [widget.id, widget]));
+
+    return {
+      ...defaultTab,
+      widgets: defaultTab.widgets.map((defaultWidget) => {
+        const persistedWidget = persistedWidgets.get(defaultWidget.id);
+
+        return persistedWidget
+          ? {
+              ...defaultWidget,
+              visible: persistedWidget.visible,
+              size: persistedWidget.size,
+              order: persistedWidget.order,
+              label: persistedWidget.label,
+            }
+          : defaultWidget;
+      }),
+    };
+  };
+
+  return {
+    ...DEFAULT_TABS,
+    ...tabs,
+    command: mergeTab(DEFAULT_TABS.command, tabs?.command),
+    habits: mergeTab(DEFAULT_TABS.habits, tabs?.habits),
+    focus: mergeTab(DEFAULT_TABS.focus, tabs?.focus),
+    goals: mergeTab(DEFAULT_TABS.goals, tabs?.goals),
+  };
+}
+
 const DEFAULT_TABS: Record<string, TabConfig> = {
   'command': {
     id: 'command',
     label: 'Command Center',
     widgets: [
       { id: 'brief', type: 'brief', label: 'Mission Brief', visible: true, size: 'md', order: 0 },
-      { id: 'priorities', type: 'priorities', label: 'Priorities', visible: true, size: 'md', order: 1 },
-      { id: 'habits_summary', type: 'habits', label: 'Habits Summary', visible: true, size: 'sm', order: 2 },
+      { id: 'priorities', type: 'priorities', label: 'Today Habits', visible: true, size: 'md', order: 1 },
+      { id: 'habits_summary', type: 'habit_summary', label: 'Habits Summary', visible: true, size: 'sm', order: 2 },
       { id: 'focus_score', type: 'stats', label: 'Focus Score', visible: true, size: 'sm', order: 3 },
       { id: 'market_pulse', type: 'trading', label: 'Market Snapshot', visible: true, size: 'sm', order: 4 },
       { id: 'workout_snaps', type: 'workout', label: 'Workout Summary', visible: true, size: 'sm', order: 5 },
@@ -75,24 +111,21 @@ const DEFAULT_TABS: Record<string, TabConfig> = {
     id: 'habits',
     label: 'Discipline Engine',
     widgets: [
-      { id: 'checklist', type: 'check', label: 'Daily Checklist', visible: true, size: 'md', order: 0 },
-      { id: 'compliance', type: 'stats', label: 'Compliance Score', visible: true, size: 'sm', order: 1 },
+      { id: 'checklist', type: 'habits', label: 'Habit Tracker', visible: true, size: 'full', order: 0 },
     ]
   },
   'focus': {
     id: 'focus',
     label: 'Deep Work',
     widgets: [
-      { id: 'timer', type: 'timer', label: 'Focus Timer', visible: true, size: 'lg', order: 0 },
-      { id: 'distraction_log', type: 'journal', label: 'Distraction Log', visible: true, size: 'sm', order: 1 },
+      { id: 'focus_workspace', type: 'focus', label: 'Focus Workflow', visible: true, size: 'full', order: 0 },
     ]
   },
   'goals': {
     id: 'goals',
     label: 'Mission Planning',
     widgets: [
-      { id: 'short_term', type: 'goals', label: 'Short Term', visible: true, size: 'md', order: 0 },
-      { id: 'long_term', type: 'goals', label: 'Long Term', visible: true, size: 'md', order: 1 },
+      { id: 'goal_manager', type: 'goals', label: 'Goals Command', visible: true, size: 'full', order: 0 },
     ]
   },
   'journal': {
@@ -179,6 +212,15 @@ export const useWidgetStore = create<WidgetState>()(
     {
       name: 'command-os-widgets-v2', // Bumped version to force clean hydration
       storage: createJSONStorage(() => localStorage),
+      merge: (persistedState, currentState) => {
+        const typedPersistedState = persistedState as Partial<WidgetState> | undefined;
+
+        return {
+          ...currentState,
+          ...typedPersistedState,
+          tabs: normalizeTabs(typedPersistedState?.tabs),
+        };
+      },
     }
   )
 );

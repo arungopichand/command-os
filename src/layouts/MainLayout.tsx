@@ -3,10 +3,11 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
-  AlertOctagon, Droplets, Sparkles, Wind, 
+  Droplets, Sparkles, Wind,
   CheckCircle, AlertTriangle, EyeOff, ShieldAlert
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { useFocus } from '../features/focus/useFocus';
 
 const STATEMENTS = [
   "I KEEP PROMISES TO MYSELF.",
@@ -27,7 +28,8 @@ interface Toast {
 
 export function MainLayout() {
   const location = useLocation();
-  const { isFocusMode, toggleFocus, identityIndex } = useAppStore();
+  const { identityIndex } = useAppStore();
+  const { isFocusModeEnabled, toggleFocusMode } = useFocus();
   const [isEmergency, setIsEmergency] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -45,23 +47,23 @@ export function MainLayout() {
   }, []);
 
   return (
-    <div className={`flex h-screen w-full overflow-hidden relative transition-colors duration-1000 ${isFocusMode ? 'bg-black' : 'bg-[#050505]'} text-slate-200`}>
+    <div className={`flex h-screen w-full overflow-hidden relative transition-colors duration-1000 ${isFocusModeEnabled ? 'bg-black' : 'bg-[#050505]'} text-slate-200`}>
       {/* Tactical Background Layer */}
-      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${isFocusMode ? 'opacity-50' : 'opacity-100'}`}>
+      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${isFocusModeEnabled ? 'opacity-35' : 'opacity-100'}`}>
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-950/20 via-[#050505] to-zinc-950 z-[-1]" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
       </div>
 
       {/* Focus Mode Protocol Overlay */}
       <AnimatePresence>
-        {isFocusMode && (
+        {isFocusModeEnabled && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] pointer-events-none border-[12px] border-amber-500/20 shadow-[inset_0_0_100px_rgba(245,158,11,0.1)]"
+            className="fixed inset-0 z-[100] pointer-events-none border-[10px] border-amber-500/15 shadow-[inset_0_0_80px_rgba(245,158,11,0.08)]"
           >
-            <div className="absolute top-10 right-10 flex items-center gap-3 bg-amber-500 text-black px-6 py-3 rounded-full font-black text-[10px] tracking-widest uppercase animate-pulse shadow-[0_0_30px_rgba(245,158,11,0.4)] pointer-events-auto cursor-pointer" onClick={toggleFocus}>
+            <div className="absolute top-10 right-10 flex items-center gap-3 bg-amber-500 text-black px-6 py-3 rounded-full font-black text-[10px] tracking-widest uppercase shadow-[0_0_30px_rgba(245,158,11,0.35)] pointer-events-auto cursor-pointer" onClick={toggleFocusMode}>
               <EyeOff size={14} /> The Dark Zone Active
             </div>
           </motion.div>
@@ -70,9 +72,9 @@ export function MainLayout() {
       
       <Sidebar />
       
-      <main className={`flex-1 overflow-y-auto transition-all duration-700 ${isFocusMode ? 'p-8 md:p-12 lg:p-16 blur-sm grayscale opacity-30 select-none pointer-events-none' : 'p-6 md:p-10 lg:p-12'} relative pb-32 min-w-0 custom-scrollbar`}>
+      <main className={`flex-1 overflow-y-auto transition-all duration-700 ${isFocusModeEnabled ? 'p-6 md:p-8 lg:p-10' : 'p-6 md:p-10 lg:p-12'} relative pb-32 min-w-0 custom-scrollbar`}>
         {/* Unified Dashboard Grid */}
-        <div className="max-w-7xl mx-auto h-full">
+        <div className={`mx-auto h-full transition-all duration-700 ${isFocusModeEnabled ? 'max-w-5xl' : 'max-w-7xl'}`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -88,7 +90,7 @@ export function MainLayout() {
       </main>
 
       {/* Persistence Identity Ticker */}
-      <div className={`fixed bottom-0 right-0 left-0 transition-all duration-500 ${isFocusMode ? 'h-0 opacity-0' : 'h-14 bg-black/80 border-t border-red-900/20 backdrop-blur-xl flex items-center justify-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]'}`}>
+      <div className={`fixed bottom-0 right-0 left-0 transition-all duration-500 ${isFocusModeEnabled ? 'h-0 opacity-0' : 'h-14 bg-black/80 border-t border-red-900/20 backdrop-blur-xl flex items-center justify-center z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]'}`}>
          <AnimatePresence mode="wait">
            <motion.p
              key={identityIndex}

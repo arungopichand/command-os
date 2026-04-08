@@ -99,7 +99,7 @@ export const TRADING_CURRICULUM: string[] = [
 
 export function getDailyLesson(): string {
   const startYear = new Date(new Date().getFullYear(), 0, 0);
-  const diff = (new Date() as any) - (startYear as any);
+  const diff = new Date().getTime() - startYear.getTime();
   const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
   return TRADING_CURRICULUM[dayOfYear % TRADING_CURRICULUM.length];
 }

@@ -1,11 +1,17 @@
-import { lazy, LazyExoticComponent } from 'react';
+import { lazy } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
 
 // Selective Lazy Loading for Tactical Widgets
 const WarRoom = lazy(() => import('../features/war-room/WarRoom').then(m => ({ default: m.WarRoom })));
-const HabitMatrix = lazy(() => import('../features/habits/HabitMatrix').then(m => ({ default: m.HabitMatrix })));
+const Habits = lazy(() => import('../features/habits/Habits').then(m => ({ default: m.Habits })));
+const HabitSummaryWidget = lazy(() => import('../features/habits/HabitWidgets').then(m => ({ default: m.HabitSummaryWidget })));
+const HabitPrioritiesWidget = lazy(() => import('../features/habits/HabitWidgets').then(m => ({ default: m.HabitPrioritiesWidget })));
 const MarketCommand = lazy(() => import('../features/trading/MarketCommand').then(m => ({ default: m.MarketCommand })));
 const PhysicalOps = lazy(() => import('../features/workout/PhysicalOps').then(m => ({ default: m.PhysicalOps })));
 const LanguageLab = lazy(() => import('../features/english/LanguageLab').then(m => ({ default: m.LanguageLab })));
+const Goals = lazy(() => import('../features/goals/Goals').then(m => ({ default: m.Goals })));
+const Focus = lazy(() => import('../features/focus/Focus').then(m => ({ default: m.Focus })));
+const DailyReview = lazy(() => import('../features/daily-review/DailyReview').then(m => ({ default: m.DailyReview })));
 
 // Tactical Market Widgets
 const MarketChart = lazy(() => import('../features/trading/MarketCommand').then(m => ({ default: m.MarketChartWidget })));
@@ -20,27 +26,33 @@ const WeeklySplit = lazy(() => import('../features/workout/PhysicalOps').then(m 
 const WordOfDay = lazy(() => import('../features/english/LanguageLab').then(m => ({ default: m.WordOfDayWidget })));
 const SentenceOfDay = lazy(() => import('../features/english/LanguageLab').then(m => ({ default: m.SentenceOfDayWidget })));
 
-// Placeholder Protocol (Ensure Type Safety)
-const Placeholder = lazy(() => Promise.resolve({ default: () => null }));
+// Dashboard Widgets
+const StatsWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.StatsWidget })));
+const PnlWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.PnlWidget })));
+const StreakWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.StreakWidget })));
+const ChecklistWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.ChecklistWidget })));
+const ConfigWidget = lazy(() => import('../features/dashboard-widgets').then(m => ({ default: m.ConfigWidget })));
 
-export const WIDGET_REGISTRY: Record<string, LazyExoticComponent<any>> = {
+export const WIDGET_REGISTRY: Record<string, LazyExoticComponent<ComponentType>> = {
   'brief': WarRoom,
-  'priorities': HabitMatrix,
-  'habits': HabitMatrix,
+  'priorities': HabitPrioritiesWidget,
+  'habits': Habits,
+  'habit_summary': HabitSummaryWidget,
+  'focus': Focus,
   'trading': MarketCommand,
   'english': LanguageLab,
-  'stats': Placeholder,
+  'stats': StatsWidget,
   
   // Market Tactical Widgets
   'chart': MarketChart,
   'watchlist': TacticalWatchlist,
-  'pnl': Placeholder, 
+  'pnl': PnlWidget,
   'risk': RiskPanel,
 
   // Physical Operational Widgets
   'workout': PhysicalOps,
   'workout_plan': DailyProtocol,
-  'streak': Placeholder,
+  'streak': StreakWidget,
   'split': WeeklySplit,
 
   // English Lexicon Widgets
@@ -48,9 +60,8 @@ export const WIDGET_REGISTRY: Record<string, LazyExoticComponent<any>> = {
   'lexicon_sentence': SentenceOfDay,
 
   // Future System Protocols
-  'check': Placeholder,
-  'timer': Placeholder,
-  'journal': Placeholder,
-  'goals': Placeholder,
-  'config': Placeholder,
+  'check': ChecklistWidget,
+  'journal': DailyReview,
+  'goals': Goals,
+  'config': ConfigWidget,
 };

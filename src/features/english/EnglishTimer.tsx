@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Play, Pause, RotateCcw, Volume2, Mic, BookOpen, Headphones, Speech } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+
+type WebkitAudioWindow = Window & typeof globalThis & {
+  webkitAudioContext?: typeof AudioContext;
+};
 
 const STAGES = [
   { name: 'Read Aloud', seconds: 300, icon: BookOpen, desc: 'Read text clearly, focusing on pronunciation and rhythm.' },
@@ -15,11 +19,13 @@ export function EnglishTimer() {
   const [timeLeft, setTimeLeft] = useState(STAGES[0].seconds);
   const [isRunning, setIsRunning] = useState(false);
   
-  const timerRef = useRef<any>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const playBeep = () => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = window.AudioContext || (window as WebkitAudioWindow).webkitAudioContext;
+      if (!AudioContextCtor) return;
+      const ctx = new AudioContextCtor();
       const osc = ctx.createOscillator();
       const gainNode = ctx.createGain();
       
@@ -34,7 +40,7 @@ export function EnglishTimer() {
       
       osc.start();
       osc.stop(ctx.currentTime + 0.5);
-    } catch (e) {
+    } catch {
       console.warn("Audio Context blocked or unsupported");
     }
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { useAppStore } from '../../store/useAppStore';
 import { 
@@ -36,17 +36,17 @@ export function Portfolio() {
   const [amount, setAmount] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
 
-  const fetchPrices = async () => {
+  const fetchPrices = useCallback(async () => {
     const newPrices: Record<string, { price: number; change: number }> = {};
     
-    const cryptoHoldings = portfolioHoldings.filter((h: Holding) => h.type === 'crypto');
-    const cryptoIds = [...new Set([...cryptoHoldings.map((h: Holding) => h.coinId!), ...Object.values(CRYPTO_MAP)])].join(',');
+    const cryptoHoldings = portfolioHoldings.filter((h) => h.type === 'crypto');
+    const cryptoIds = [...new Set([...cryptoHoldings.map((h) => h.coinId!), ...Object.values(CRYPTO_MAP)])].join(',');
     
     try {
       if (cryptoIds) {
         const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds}&vs_currencies=usd&include_24hr_change=true`);
-        const data = await res.json();
-        Object.entries(data).forEach(([id, val]: any) => {
+        const data = await res.json() as Record<string, { usd: number; usd_24h_change: number }>;
+        Object.entries(data).forEach(([id, val]) => {
           newPrices[id] = { price: val.usd, change: val.usd_24h_change };
         });
       }
@@ -58,9 +58,15 @@ export function Portfolio() {
     });
 
     setPrices(newPrices);
-  };
+  }, [portfolioHoldings]);
 
-  useEffect(() => { fetchPrices(); }, [portfolioHoldings.length]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchPrices();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchPrices]);
 
   const addHolding = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,12 +86,12 @@ export function Portfolio() {
   };
 
   const removeHolding = (id: string) => {
-    setPortfolio(portfolioHoldings.filter((h: Holding) => h.id !== id));
+    setPortfolio(portfolioHoldings.filter((h) => h.id !== id));
   };
 
-  const filteredHoldings = portfolioHoldings.filter((h: Holding) => viewType === 'all' || h.type === viewType);
+  const filteredHoldings = portfolioHoldings.filter((h) => viewType === 'all' || h.type === viewType);
 
-  const stats = useMemo(() => portfolioHoldings.reduce((acc, h: Holding) => {
+  const stats = useMemo(() => portfolioHoldings.reduce((acc, h) => {
     const currentPrice = h.type === 'crypto' ? (prices[h.coinId!]?.price || 0) : (prices[h.symbol]?.price || EQUITY_BASE_PRICES[h.symbol] || h.buyPrice);
     const value = h.amount * currentPrice;
     const cost = h.amount * h.buyPrice;

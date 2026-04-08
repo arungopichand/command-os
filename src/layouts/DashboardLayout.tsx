@@ -1,9 +1,9 @@
-import React, { Suspense, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Suspense, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { LayoutGrid, Settings2, Eye, EyeOff, RefreshCcw } from 'lucide-react';
 import { WidgetContainer } from '../components/ui/WidgetContainer';
 import { WIDGET_REGISTRY } from '../config/widgetRegistry';
-import { useWidgetStore, type TabConfig } from '../store/useWidgetStore';
+import { useWidgetStore } from '../store/useWidgetStore';
 
 interface DashboardLayoutProps {
   tabId: string;
@@ -25,6 +25,16 @@ export function DashboardLayout({ tabId }: DashboardLayoutProps) {
   }
 
   const visibleWidgets = isEditMode ? tab.widgets : tab.widgets.filter(w => w.visible);
+  const totalWidgetCount = tab.widgets.length;
+  const activeWidgetCount = tab.widgets.filter((widget) => widget.visible).length;
+  const hiddenWidgetCount = totalWidgetCount - activeWidgetCount;
+  const statusLabel = isEditMode
+    ? `${activeWidgetCount} active, ${hiddenWidgetCount} hidden`
+    : activeWidgetCount === 0
+      ? 'No widgets active'
+      : hiddenWidgetCount === 0
+        ? `All ${activeWidgetCount} widgets active`
+        : `${activeWidgetCount} active, ${hiddenWidgetCount} hidden`;
 
   return (
     <div className="space-y-10">
@@ -36,7 +46,7 @@ export function DashboardLayout({ tabId }: DashboardLayoutProps) {
            </div>
            <div>
              <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{tab.label}</h2>
-             <p className="text-[8px] text-slate-500 uppercase tracking-[0.5em] font-black mt-2 leading-none">Operational Status: Optimal</p>
+             <p className="text-[8px] text-slate-500 uppercase tracking-[0.5em] font-black mt-2 leading-none">{statusLabel}</p>
            </div>
         </div>
 

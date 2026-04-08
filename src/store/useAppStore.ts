@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { supabase } from '../services/supabase';
 
 interface Task {
   id: string;
@@ -33,26 +32,18 @@ interface AppState {
   progress: Record<string, Record<string, boolean>>; // dateStr -> taskId -> completed
   awardedToday: Record<string, Record<string, boolean>>; // dateStr -> taskId -> awarded
   
-  // Habits
-  habitMatrix: Record<string, boolean>; // dateId -> won
-  
   // Portfolio
   portfolioHoldings: Holding[];
   
   // Identity System
   identityIndex: number;
   
-  // Focus Mode
-  isFocusMode: boolean;
-  
   // Actions
   addXP: (amount: number) => void;
   setAuthenticated: (status: boolean) => void;
   toggleTask: (dateStr: string, taskId: string, missionTasks: Task[]) => { xpAwarded: number; perfectDay: boolean };
-  updateHabit: (dateId: string) => void;
   setPortfolio: (holdings: Holding[]) => void;
   nextIdentity: () => void;
-  toggleFocus: () => void;
 }
 
 const DEFAULT_MISSIONS: Record<number, Mission> = {
@@ -73,10 +64,8 @@ export const useAppStore = create<AppState>()(
       missions: DEFAULT_MISSIONS,
       progress: {},
       awardedToday: {},
-      habitMatrix: {},
       portfolioHoldings: [],
       identityIndex: 0,
-      isFocusMode: false,
 
       addXP: (amount: number) => set((state) => ({ totalXP: state.totalXP + amount })),
       
@@ -119,15 +108,9 @@ export const useAppStore = create<AppState>()(
         return { xpAwarded, perfectDay };
       },
 
-      updateHabit: (dateId: string) => set((state) => ({
-        habitMatrix: { ...state.habitMatrix, [dateId]: !state.habitMatrix[dateId] }
-      })),
-
       setPortfolio: (holdings: Holding[]) => set({ portfolioHoldings: holdings }),
 
       nextIdentity: () => set((state) => ({ identityIndex: (state.identityIndex + 1) % 5 })),
-
-      toggleFocus: () => set((state) => ({ isFocusMode: !state.isFocusMode })),
     }),
     {
       name: 'command-os-storage',
@@ -135,6 +118,3 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
-
-// Prevent unused variable error while keeping supabase for future background sync logic
-console.log('Database Interface Initialized:', !!supabase);

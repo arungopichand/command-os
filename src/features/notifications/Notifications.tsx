@@ -1,205 +1,243 @@
-import { useState, useEffect } from 'react';
-import { generateUUID } from '../../utils/uuid';
-import { GlassCard } from '../../components/ui/GlassCard';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { 
-  Bell, BellOff, BellRing, Check, 
-  Save, Clock, ShieldCheck, Zap, Plus,
-  Trash2, Send
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import {
-  requestNotificationPermission,
-  getNotificationPermission,
-  scheduleNotificationsForToday,
-  showImmediateNotification
-} from '../../services/notifications';
+  Bell,
+  BellOff,
+  CheckCircle2,
+  LoaderCircle,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  Workflow,
+} from 'lucide-react';
+import { GlassCard } from '../../components/ui/GlassCard';
+import { NotificationAlertForm } from './NotificationAlertForm';
+import { NotificationAlertList } from './NotificationAlertList';
+import type {
+  NotificationAlert,
+  NotificationAlertDraft,
+  NotificationPermissionState,
+} from './notification.types';
+import { useNotifications } from './useNotifications';
 
-interface Alert {
-  id: string;
-  label: string;
-  time: string;
-  message: string;
-  enabled: boolean;
+function getPermissionTitle(permission: NotificationPermissionState) {
+  switch (permission) {
+    case 'granted':
+      return 'Permission Granted';
+    case 'denied':
+      return 'Permission Denied';
+    case 'unsupported':
+      return 'Not Supported';
+    default:
+      return 'Permission Required';
+  }
 }
 
-const DEFAULT_ALERTS: Alert[] = [
-  { id: '1', label: 'Morning Deploy', time: '07:00', message: 'War Room is open. Initiate your Build Phase.', enabled: true },
-  { id: '2', label: '1H Check-In', time: '08:00', message: 'One hour in. Are you on mission?', enabled: true },
-  { id: '3', label: 'Midday Recon', time: '13:00', message: 'Hydrate. Are your afternoon tasks on track?', enabled: true },
-  { id: '4', label: 'English Protocol', time: '17:00', message: 'Initiate the 20-min English Lexicon session.', enabled: true },
-  { id: '5', label: 'Evening Debrief', time: '20:00', message: 'Log your progress and prepare for tomorrow.', enabled: false },
-  { id: '6', label: 'Sleep Protocol', time: '22:30', message: 'System shutdown. Lights off in 30 minutes.', enabled: false },
-];
+function getPermissionDetail(permission: NotificationPermissionState) {
+  switch (permission) {
+    case 'granted':
+      return 'Browser notifications are available to COMMAND.OS on this device.';
+    case 'denied':
+      return 'Reminders are saved locally, but delivery stays inactive until permission is re-enabled in browser settings.';
+    case 'unsupported':
+      return 'This browser does not expose the Notification API required for reminder delivery.';
+    default:
+      return 'Grant permission to activate daily reminder delivery while COMMAND.OS is open.';
+  }
+}
 
 export function Notifications() {
-  const [alerts, setAlerts] = useLocalStorage<Alert[]>('command_notification_alerts_v2', DEFAULT_ALERTS);
-  const [permission, setPermission] = useState(getNotificationPermission());
-  const [saved, setSaved] = useState(false);
-  const [newAlert, setNewAlert] = useState({ label: '', time: '09:00', message: '', enabled: true });
+  const {
+    alerts,
+    permission,
+    notificationsSupported,
+    serviceWorkerSupported,
+    serviceWorkerRegistered,
+    serviceWorkerError,
+    loading,
+    error,
+    isSaving,
+    isRequestingPermission,
+    enabledAlertCount,
+    activeAlertCount,
+    requestPermission,
+    addAlert,
+    editAlert,
+    toggleAlert,
+    removeAlert,
+    rescheduleAlerts,
+  } = useNotifications();
+  const [editingAlert, setEditingAlert] = useState<NotificationAlert | null>(null);
 
-  useEffect(() => {
-    setPermission(getNotificationPermission());
-  }, []);
-
-  const handleRequestPermission = async () => {
-    const granted = await requestNotificationPermission();
-    setPermission(granted ? 'granted' : 'denied');
-    if (granted) {
-      showImmediateNotification('System Active', 'Neural Link Established. Alerts authorized.');
+  async function handleSubmit(draft: NotificationAlertDraft) {
+    if (editingAlert) {
+      await editAlert(editingAlert.id, draft);
+      setEditingAlert(null);
+      return;
     }
-  };
 
-  const handleSaveAndSchedule = () => {
-    scheduleNotificationsForToday(alerts);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+    await addAlert(draft);
+  }
 
-  const toggleAlert = (id: string) => {
-    setAlerts(alerts.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a));
-  };
-
-  const updateAlert = (id: string, updates: Partial<Alert>) => {
-    setAlerts(alerts.map(a => a.id === id ? { ...a, ...updates } : a));
-  };
-
-  const addAlert = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAlert.label || !newAlert.message) return;
-    setAlerts([...alerts, { ...newAlert, id: generateUUID() }]);
-    setNewAlert({ label: '', time: '09:00', message: '', enabled: true });
-  };
-
-  const removeAlert = (id: string) => {
-    setAlerts(alerts.filter(a => a.id !== id));
-  };
-
-  return (
-    <div className="space-y-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-4">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <ShieldCheck className="text-violet-500 w-6 h-6" />
-            <span className="text-[10px] font-black text-violet-500/60 tracking-[0.3em] uppercase">Communication Vector</span>
-          </div>
-          <h2 className="text-6xl font-black tracking-tighter text-white leading-none">
-            ALERTS
-          </h2>
-          <p className="text-xl font-bold text-violet-400/80 tracking-widest uppercase mt-2 indent-1">
-            NEURAL PUSH NOTIFICATIONS
-          </p>
+  if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
+          <LoaderCircle size={18} className="animate-spin text-red-500" />
+          Loading Notifications
         </div>
       </div>
+    );
+  }
 
-      {/* Permission Tactical Panel */}
-      <GlassCard className={`p-8 border-t-4 transition-all duration-500 ${permission === 'granted' ? 'border-emerald-500 bg-emerald-950/10' : 'border-red-500 bg-red-950/10 shadow-[0_0_50px_rgba(220,38,38,0.1)]'}`}>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-6">
-            <div className={`p-5 rounded-[2rem] border transition-all ${permission === 'granted' ? 'bg-emerald-600 text-white shadow-[0_0_30px_rgba(16,185,129,0.4)]' : 'bg-red-600 text-white animate-pulse shadow-[0_0_30px_rgba(220,38,38,0.4)]'}`}>
-              {permission === 'granted' ? <BellRing size={32} /> : <BellOff size={32} />}
+  return (
+    <div className="mx-auto max-w-6xl space-y-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-red-500/70">Signal Desk</p>
+          <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-white">Notifications</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-500">
+            Reminders are local-first. They restore on app load and fire while COMMAND.OS stays open after browser permission is granted.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void rescheduleAlerts()}
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08]"
+        >
+          <RefreshCw size={14} />
+          Restore Schedules
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <GlassCard className="border-white/5 bg-black/40 p-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Permission</p>
+          <div className="mt-3 flex items-center gap-3">
+            {permission === 'granted' ? (
+              <ShieldCheck size={20} className="text-emerald-400" />
+            ) : (
+              <BellOff size={20} className="text-red-400" />
+            )}
+            <p className="text-2xl font-black text-white">{getPermissionTitle(permission)}</p>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500">{getPermissionDetail(permission)}</p>
+          {permission === 'default' ? (
+            <button
+              type="button"
+              onClick={() => void requestPermission()}
+              disabled={isRequestingPermission}
+              className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Bell size={14} />
+              {isRequestingPermission ? 'Requesting...' : 'Request Permission'}
+            </button>
+          ) : null}
+        </GlassCard>
+
+        <GlassCard className="border-white/5 bg-black/40 p-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Service Worker</p>
+          <div className="mt-3 flex items-center gap-3">
+            <Workflow size={20} className={serviceWorkerRegistered ? 'text-emerald-400' : 'text-slate-500'} />
+            <p className="text-2xl font-black text-white">
+              {!serviceWorkerSupported
+                ? 'Unsupported'
+                : serviceWorkerRegistered
+                  ? 'Registered'
+                  : 'Pending'}
+            </p>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500">
+            {!serviceWorkerSupported
+              ? 'This browser does not support service workers for COMMAND.OS.'
+              : serviceWorkerRegistered
+                ? 'The app startup flow is registering the service worker successfully.'
+                : 'The app is attempting registration. Reminder delivery still only claims app-open behavior.'}
+          </p>
+        </GlassCard>
+
+        <GlassCard className="border-white/5 bg-black/40 p-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Active Reminders</p>
+          <p className="mt-3 text-3xl font-black text-white">{activeAlertCount}</p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500">
+            {enabledAlertCount === 0
+              ? 'No enabled reminders yet.'
+              : permission === 'granted'
+                ? `${activeAlertCount} enabled reminder${activeAlertCount === 1 ? '' : 's'} restored while the app is open.`
+                : `${enabledAlertCount} reminder${enabledAlertCount === 1 ? '' : 's'} saved locally, waiting on permission.`}
+          </p>
+        </GlassCard>
+      </div>
+
+      {serviceWorkerError ? (
+        <GlassCard className="border-amber-500/20 bg-amber-500/10 p-5">
+          <p className="text-sm leading-relaxed text-amber-100/85">{serviceWorkerError}</p>
+        </GlassCard>
+      ) : null}
+
+      {error ? (
+        <GlassCard className="border-red-500/20 bg-red-500/10 p-6">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-red-400">
+              <ShieldAlert size={18} />
             </div>
             <div>
-              <h4 className="text-2xl font-black text-white tracking-widest uppercase mb-1">
-                {permission === 'granted' ? 'Interface Active' : 'Access Restricted'}
-              </h4>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed">
-                {permission === 'granted' 
-                  ? 'COMMAND. is currently linked to your local device notification unit.' 
-                  : 'Establish a neural link to receive mission-critical deployment alerts.'}
+              <h2 className="text-xl font-black uppercase tracking-tight text-white">Notifications Unavailable</h2>
+              <p className="mt-3 text-sm leading-relaxed text-red-200/80">{error}</p>
+            </div>
+          </div>
+        </GlassCard>
+      ) : null}
+
+      {!notificationsSupported ? (
+        <GlassCard className="border-red-500/20 bg-red-500/10 p-6">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-red-400">
+              <ShieldAlert size={18} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tight text-white">Browser Support Required</h2>
+              <p className="mt-3 text-sm leading-relaxed text-red-200/80">
+                This environment does not support browser notifications. You can still review reminders here, but delivery will stay inactive.
               </p>
             </div>
           </div>
-          {permission !== 'granted' && (
-            <button onClick={handleRequestPermission} className="w-full md:w-auto px-10 py-5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-[0.3em] text-xs rounded-2xl transition-all shadow-[0_15px_30px_rgba(220,38,38,0.3)]">
-              Authorize Access
-            </button>
-          )}
-        </div>
-      </GlassCard>
+        </GlassCard>
+      ) : null}
 
-      {/* Scheduled Procotols */}
-      <div className="grid grid-cols-1 gap-4">
-        <h3 className="text-xs font-black text-violet-500/60 uppercase tracking-[0.3em] flex items-center gap-3 mb-2 ml-4">
-          <Clock size={16} /> Scheduled Deployment Protocols
-        </h3>
-        <AnimatePresence mode="popLayout">
-          {alerts.map(alert => (
-            <motion.div key={alert.id} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95 }}>
-               <GlassCard className={`p-6 border-l-4 transition-all duration-300 ${alert.enabled ? 'border-l-violet-600 bg-black/60 border-white/5' : 'border-l-slate-800 bg-black/20 opacity-40'}`}>
-                 <div className="flex flex-col md:flex-row items-center gap-6">
-                    <button onClick={() => toggleAlert(alert.id)} className={`p-4 rounded-2xl border transition-all ${alert.enabled ? 'bg-violet-600/20 border-violet-500 text-violet-400' : 'bg-black border-slate-800 text-slate-700'}`}>
-                       {alert.enabled ? <Zap size={20} fill="currentColor" /> : <Zap size={20} />}
-                    </button>
-                    
-                    <div className="flex-1 space-y-4 w-full">
-                       <div className="flex items-center justify-between gap-4">
-                          <p className="text-lg font-black text-white uppercase tracking-tighter">{alert.label}</p>
-                          <input 
-                            type="time" 
-                            value={alert.time}
-                            onChange={e => updateAlert(alert.id, { time: e.target.value })}
-                            className="bg-black/80 border border-violet-900/30 rounded-xl px-4 py-2 text-violet-400 text-xs font-black tracking-widest focus:border-violet-500 [color-scheme:dark]"
-                          />
-                       </div>
-                       <div className="relative group">
-                          <input 
-                            type="text" 
-                            value={alert.message}
-                            onChange={e => updateAlert(alert.id, { message: e.target.value })}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-slate-400 text-[11px] font-bold tracking-wide focus:border-violet-900/50 transition-colors"
-                          />
-                       </div>
-                    </div>
+      {permission === 'granted' && enabledAlertCount > 0 ? (
+        <GlassCard className="border-emerald-500/20 bg-emerald-500/10 p-5">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 size={18} className="mt-0.5 text-emerald-400" />
+            <p className="text-sm leading-relaxed text-emerald-100/85">
+              Daily reminders are restored from local storage when the app loads. Delivery is designed for the app-open case and is not presented as guaranteed background push.
+            </p>
+          </div>
+        </GlassCard>
+      ) : null}
 
-                    <button onClick={() => removeAlert(alert.id)} className="p-3 text-slate-800 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
-                       <Trash2 size={20} />
-                    </button>
-                 </div>
-               </GlassCard>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      <NotificationAlertForm
+        key={editingAlert?.id ?? 'new-reminder'}
+        editingAlert={editingAlert}
+        isSaving={isSaving}
+        onSubmit={handleSubmit}
+        onCancelEdit={() => setEditingAlert(null)}
+      />
 
-      {/* New Vector Initialization */}
-      <GlassCard className="p-10 border-violet-900/20 bg-black/40 relative group overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-           <Plus size={120} className="text-violet-500" />
-        </div>
-        <h3 className="text-sm font-black text-violet-400 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
-          <Plus size={20} /> Initialize New Alert Vector
-        </h3>
-        <form onSubmit={addAlert} className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
-          <div className="md:col-span-4 flex flex-col gap-2">
-            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Vector Label</label>
-            <input value={newAlert.label} onChange={e => setNewAlert({...newAlert, label: e.target.value})} type="text" placeholder="Mission Code" className="w-full bg-black/60 border border-violet-900/30 rounded-2xl px-6 py-4 text-white text-xs font-black uppercase tracking-widest focus:border-violet-500" />
-          </div>
-          <div className="md:col-span-2 flex flex-col gap-2">
-            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Time-Zero</label>
-            <input value={newAlert.time} onChange={e => setNewAlert({...newAlert, time: e.target.value})} type="time" className="w-full bg-black/60 border border-violet-900/30 rounded-2xl px-6 py-4 text-violet-400 text-xs font-black tracking-widest focus:border-violet-500 [color-scheme:dark]" />
-          </div>
-          <div className="md:col-span-4 flex flex-col gap-2">
-             <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-4">Engagement Intel</label>
-             <input value={newAlert.message} onChange={e => setNewAlert({...newAlert, message: e.target.value})} type="text" placeholder="Neural Payload Description" className="w-full bg-black/60 border border-violet-900/30 rounded-2xl px-6 py-4 text-white text-xs font-black uppercase focus:border-violet-500" />
-          </div>
-          <div className="md:col-span-2 flex items-end">
-            <button type="submit" className="w-full h-14 bg-violet-600 hover:bg-violet-500 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">Deploy</button>
-          </div>
-        </form>
-      </GlassCard>
-
-      {/* Global Sync Command */}
-      {permission === 'granted' && (
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleSaveAndSchedule} 
-          className={`w-full py-8 font-black tracking-[0.5em] uppercase rounded-3xl transition-all flex items-center justify-center gap-4 text-xl border-2 ${saved ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_50px_rgba(16,185,129,0.5)]' : 'bg-black hover:bg-violet-900 border-violet-900/50 text-violet-500 hover:text-white shadow-[0_0_30px_rgba(139,92,246,0.2)]'}`}
-        >
-          {saved ? <><Check size={28} /> Deployment Synchronized</> : <><Send size={28} /> Synchronize Global Alerts</>}
-        </motion.button>
-      )}
+      <NotificationAlertList
+        alerts={alerts}
+        runtimeState={{
+          permission,
+          notificationsSupported,
+          serviceWorkerSupported,
+          serviceWorkerRegistered,
+          serviceWorkerError,
+        }}
+        isSaving={isSaving}
+        onEdit={setEditingAlert}
+        onToggle={toggleAlert}
+        onDelete={removeAlert}
+      />
     </div>
   );
 }

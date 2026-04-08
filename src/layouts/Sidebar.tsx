@@ -10,6 +10,7 @@ import {
 import { exportData } from '../utils/exportData';
 import { supabase } from '../services/supabase';
 import { useAppStore } from '../store/useAppStore';
+import { useFocus } from '../features/focus/useFocus';
 
 const MISSION_GROUPS = [
   {
@@ -41,17 +42,20 @@ const MISSION_GROUPS = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { isFocusMode, toggleFocus, setAuthenticated } = useAppStore();
+  const { setAuthenticated } = useAppStore();
+  const { isFocusModeEnabled, toggleFocusMode } = useFocus();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setAuthenticated(false);
     navigate('/');
   };
 
   return (
-    <aside className={`${collapsed ? 'w-20' : 'w-72'} ${isFocusMode ? 'opacity-10 hover:opacity-100' : ''} transition-all duration-500 bg-[#020202] border-r border-red-900/20 flex flex-col h-screen sticky top-0 z-50 shrink-0 relative overflow-hidden group/sidebar`}>
+    <aside className={`${collapsed ? 'w-20' : 'w-72'} ${isFocusModeEnabled ? 'opacity-40 hover:opacity-100' : ''} transition-all duration-500 bg-[#020202] border-r border-red-900/20 flex flex-col h-screen sticky top-0 z-50 shrink-0 relative overflow-hidden group/sidebar`}>
       
       {/* Tactical Glow Trace */}
       <div className="absolute inset-y-0 left-0 w-[1px] bg-red-600/30 shadow-[0_0_20px_rgba(220,38,38,0.5)] z-20" />
@@ -120,7 +124,7 @@ export function Sidebar() {
       <div className={`p-6 mt-auto border-t border-red-900/10 space-y-3 relative z-10 bg-black/40 backdrop-blur-md`}>
         
         {/* Emergency Override (Relocated for Layout De-Clutter) */}
-        {!collapsed && !isFocusMode && (
+        {!collapsed && !isFocusModeEnabled && (
           <button 
             className="w-full flex items-center gap-4 px-4 py-4 mb-2 bg-red-600/10 hover:bg-red-600/20 border border-red-600/40 rounded-2xl text-red-500 font-black tracking-[0.3em] uppercase text-[9px] shadow-[0_0_20px_rgba(220,38,38,0.2)] transition-all group"
             onClick={() => window.dispatchEvent(new CustomEvent('emergency-override'))}
@@ -131,11 +135,11 @@ export function Sidebar() {
         )}
 
         <button
-          onClick={toggleFocus}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-4'} px-4 py-4 rounded-2xl transition-all duration-300 uppercase text-[9px] font-black tracking-[0.3em] ${isFocusMode ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.5)]' : 'bg-zinc-900 text-slate-500 hover:bg-amber-950/20 hover:text-amber-400'}`}
+          onClick={toggleFocusMode}
+          className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-4'} px-4 py-4 rounded-2xl transition-all duration-300 uppercase text-[9px] font-black tracking-[0.3em] ${isFocusModeEnabled ? 'bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.5)]' : 'bg-zinc-900 text-slate-500 hover:bg-amber-950/20 hover:text-amber-400'}`}
         >
-          {isFocusMode ? <EyeOff size={16} /> : <Eye size={16} />}
-          {!collapsed && <span>{isFocusMode ? 'Exit Dark Zone' : 'Focus Mode'}</span>}
+          {isFocusModeEnabled ? <EyeOff size={16} /> : <Eye size={16} />}
+          {!collapsed && <span>{isFocusModeEnabled ? 'Exit Dark Zone' : 'Focus Mode'}</span>}
         </button>
 
         <div className="flex gap-2">
