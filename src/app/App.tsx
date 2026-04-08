@@ -3,37 +3,42 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { MainLayout } from '../layouts/MainLayout';
 import { DashboardLayout } from '../layouts/DashboardLayout';
+import { GlassCard } from '../components/ui/GlassCard';
 import { OSControl } from '../features/settings/OSControl';
 import { useAppStore } from '../store/useAppStore';
 import { isSupabaseConfigured, supabase, supabaseConfigError } from '../services/supabase';
 
 const Auth = lazy(() => import('../features/auth/Auth').then((m) => ({ default: m.Auth })));
 const Notifications = lazy(() => import('../features/notifications/Notifications').then((m) => ({ default: m.Notifications })));
+const AUTH_BOOT_TIMEOUT_MS = 8000;
 
 function LoadingScreen({ message = "Initializing Link..." }) {
   return (
-    <div className="h-screen w-full bg-[#050505] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
-        <p className="text-red-500 animate-pulse text-[10px] tracking-[0.3em] uppercase font-black">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--shell-bg)] px-6">
+      <GlassCard className="w-full max-w-md p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[24px] border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.14)]">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/12 border-t-[var(--shell-brand)]" />
+        </div>
+        <p className="section-eyebrow mt-6">Boot Sequence</p>
+        <p className="mt-3 text-sm leading-relaxed text-slate-300">
           {message}
         </p>
-      </div>
+      </GlassCard>
     </div>
   );
 }
 
 function ConfigurationScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050505] p-6 text-slate-200">
-      <div className="w-full max-w-2xl rounded-[2rem] border border-red-500/20 bg-black/70 p-10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--shell-bg)] p-6 text-slate-200">
+      <GlassCard className="w-full max-w-2xl p-8 sm:p-10">
         <div className="mb-8 flex items-center gap-4">
-          <div className="rounded-2xl bg-red-600/15 p-4">
-            <ShieldAlert size={28} className="text-red-500" />
+          <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.14)] p-4">
+            <ShieldAlert size={28} className="text-[color:var(--shell-brand)]" />
           </div>
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tight text-white">Configuration Required</h1>
-            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.35em] text-red-400">
+            <h1 className="font-display text-3xl font-bold tracking-[-0.05em] text-white">Configuration required</h1>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--shell-brand)]">
               Supabase Link Not Initialized
             </p>
           </div>
@@ -43,16 +48,16 @@ function ConfigurationScreen() {
           COMMAND.OS now reads its Supabase connection from Vite environment variables instead of hardcoded values.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-white/5 bg-white/[0.02] p-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Required Variables</p>
+        <div className="mt-8 rounded-[24px] border border-white/8 bg-white/[0.03] p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Required Variables</p>
           <div className="mt-4 space-y-3 font-mono text-sm text-white">
             <div>VITE_SUPABASE_URL</div>
             <div>VITE_SUPABASE_ANON_KEY</div>
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Quick Start</p>
+        <div className="mt-8 rounded-[24px] border border-amber-500/18 bg-amber-500/10 p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-300">Quick Start</p>
           <p className="mt-3 text-sm leading-relaxed text-slate-300">
             Copy `.env.example` to `.env.local`, add your Supabase project values, and restart the dev server.
           </p>
@@ -63,7 +68,7 @@ function ConfigurationScreen() {
             {supabaseConfigError}
           </p>
         )}
-      </div>
+      </GlassCard>
     </div>
   );
 }
@@ -78,21 +83,52 @@ export default function App() {
     }
 
     let isMounted = true;
+    const authBootstrapTimeout = window.setTimeout(() => {
+      if (!isMounted) {
+        return;
+      }
 
-    void supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      setAuthenticated(!!session);
+      console.warn('Auth session bootstrap timed out. Falling back to the signed-out surface.');
+      setAuthenticated(false);
       setLoading(false);
-    });
+    }, AUTH_BOOT_TIMEOUT_MS);
+
+    void supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setAuthenticated(!!session);
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error('Unable to initialize auth session.', error);
+        setAuthenticated(false);
+      })
+      .finally(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        window.clearTimeout(authBootstrapTimeout);
+        setLoading(false);
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (isMounted) {
         setAuthenticated(!!session);
+        setLoading(false);
       }
     });
 
     return () => {
       isMounted = false;
+      window.clearTimeout(authBootstrapTimeout);
       subscription.unsubscribe();
     };
   }, [setAuthenticated]);

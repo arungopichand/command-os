@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Settings2, X, GripVertical, Edit3 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Edit3, EyeOff, GripVertical, Settings2 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { useWidgetStore, type WidgetSize } from '../../store/useWidgetStore';
 import { cn } from '../../utils/cn';
@@ -15,15 +15,32 @@ interface WidgetContainerProps {
   isDraggable?: boolean;
 }
 
-export function WidgetContainer({ tabId, widgetId, label, size, children, isDraggable = true }: WidgetContainerProps) {
+const SIZE_LABELS: Record<WidgetSize, string> = {
+  sm: 'Compact',
+  md: 'Wide',
+  lg: 'Wide',
+  full: 'Full',
+};
+
+export function WidgetContainer({
+  tabId,
+  widgetId,
+  type,
+  label,
+  size,
+  children,
+  isDraggable = true,
+}: WidgetContainerProps) {
   const { toggleWidget, updateWidgetSize, renameWidget } = useWidgetStore();
   const [showSettings, setShowSettings] = useState(false);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [newLabel, setNewLabel] = useState(label);
 
-  const handleRename = (e: React.FormEvent) => {
-    e.preventDefault();
-    renameWidget(tabId, widgetId, newLabel);
+  const handleRename = (event: React.FormEvent) => {
+    event.preventDefault();
+    const nextLabel = newLabel.trim() || label;
+    renameWidget(tabId, widgetId, nextLabel);
+    setNewLabel(nextLabel);
     setIsEditingLabel(false);
   };
 
@@ -31,85 +48,139 @@ export function WidgetContainer({ tabId, widgetId, label, size, children, isDrag
     sm: 'col-span-1',
     md: 'col-span-1 md:col-span-2 xl:col-span-2',
     lg: 'col-span-1 md:col-span-2 xl:col-span-2',
-    full: 'col-span-1 md:col-span-2 xl:col-span-4'
+    full: 'col-span-1 md:col-span-2 xl:col-span-4',
   };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className={cn("relative min-w-0 group/widget", sizeClasses[size])}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
+      transition={{ duration: 0.24, ease: 'easeOut' }}
+      className={cn('group/widget relative min-w-0', sizeClasses[size])}
     >
-      <GlassCard className="flex h-full min-w-0 flex-col overflow-hidden border-white/5 bg-black/40 p-0 shadow-[0_0_40px_rgba(0,0,0,0.3)] transition-all duration-500 hover:border-red-600/20">
-        
-        {/* Widget Strategic Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/5 bg-white/[0.02] px-4 py-4 backdrop-blur-sm sm:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-             {isDraggable && <GripVertical size={14} className="text-white/20 cursor-grab active:cursor-grabbing hover:text-red-500/50 transition-colors" />}
-             {isEditingLabel ? (
-               <form onSubmit={handleRename}>
-                 <input
-                   autoFocus
-                   value={newLabel}
-                   onChange={e => setNewLabel(e.target.value)}
-                   onBlur={handleRename}
-                   className="bg-red-950/20 border border-red-500/30 rounded px-2 py-0.5 text-[10px] font-black uppercase text-white focus:outline-none"
-                 />
-               </form>
-             ) : (
-               <h3 className="flex min-w-0 items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-slate-400 transition-colors group-hover/widget:text-red-500">
-                 <span className="truncate">{label}</span>
-                 <Edit3 size={10} className="opacity-0 group-hover/widget:opacity-100 cursor-pointer text-white/30" onClick={() => setIsEditingLabel(true)} />
-               </h3>
-             )}
+      <GlassCard className="flex h-full min-w-0 flex-col overflow-hidden p-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.02] px-4 py-4 sm:px-5">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            {isDraggable ? (
+              <button
+                type="button"
+                className="mt-0.5 hidden cursor-grab rounded-2xl border border-white/8 bg-white/[0.03] p-2 text-white/50 transition-all duration-200 hover:scale-[1.02] hover:text-white active:scale-[0.98] active:cursor-grabbing md:inline-flex"
+              >
+                <GripVertical size={14} />
+              </button>
+            ) : null}
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {isEditingLabel ? (
+                  <form onSubmit={handleRename} className="w-full max-w-xs">
+                    <input
+                      autoFocus
+                      value={newLabel}
+                      onChange={(event) => setNewLabel(event.target.value)}
+                      onBlur={handleRename}
+                      className="input-surface py-2 text-sm"
+                    />
+                  </form>
+                ) : (
+                  <>
+                    <h3 className="truncate text-lg font-semibold tracking-tight text-white">{label}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingLabel(true)}
+                      className="inline-flex items-center justify-center rounded-full border border-transparent p-1 text-white/50 transition-all duration-200 hover:scale-[1.02] hover:border-white/8 hover:bg-white/[0.04] hover:text-white active:scale-[0.98]"
+                    >
+                      <Edit3 size={12} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
+                  {type.replace(/_/g, ' ')}
+                </div>
+                <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
+                  {SIZE_LABELS[size]}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-             <button onClick={() => setShowSettings(!showSettings)} className="p-1.5 hover:bg-white/5 rounded-lg text-white/20 hover:text-red-500 transition-all">
-                <Settings2 size={14} />
-             </button>
-             <button onClick={() => toggleWidget(tabId, widgetId)} className="p-1.5 hover:bg-white/5 rounded-lg text-white/20 hover:text-red-600 transition-all">
-                <X size={14} />
-             </button>
+            <span className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60 sm:inline">
+              View all
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowSettings((value) => !value)}
+              className="inline-flex items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] p-2.5 text-white/50 transition-all duration-200 hover:scale-[1.02] hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
+            >
+              <Settings2 size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleWidget(tabId, widgetId)}
+              className="inline-flex items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03] p-2.5 text-white/50 transition-all duration-200 hover:scale-[1.02] hover:border-[rgba(240,90,61,0.18)] hover:bg-[rgba(240,90,61,0.1)] hover:text-white active:scale-[0.98]"
+            >
+              <EyeOff size={14} />
+            </button>
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="relative flex-1 overflow-hidden p-4 sm:p-6">
           {children}
         </div>
 
-        {/* Settings Tactical Overlay */}
         <AnimatePresence>
-          {showSettings && (
+          {showSettings ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="absolute inset-0 z-20 bg-black/95 backdrop-blur-md p-8 flex flex-col justify-center"
+              className="absolute inset-0 z-20 flex flex-col justify-center bg-[rgba(5,9,14,0.92)] p-6 backdrop-blur-2xl sm:p-8"
             >
-              <h4 className="text-[9px] font-black uppercase tracking-[0.4em] text-red-500 mb-6">Size Configuration</h4>
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                 {(['sm', 'md', 'lg', 'full'] as WidgetSize[]).map(s => (
-                   <button
-                     key={s}
-                     onClick={() => { updateWidgetSize(tabId, widgetId, s); setShowSettings(false); }}
-                     className={cn(
-                       "px-4 py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all",
-                       size === s ? "bg-red-600 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]" : "bg-white/5 border-white/5 text-slate-500 hover:text-white"
-                     )}
-                   >
-                     {s}
-                   </button>
-                 ))}
+              <div className="mx-auto w-full max-w-md rounded-[28px] border border-white/8 bg-[rgba(12,18,26,0.92)] p-6 shadow-[0_24px_50px_rgba(0,0,0,0.35)]">
+                <p className="section-eyebrow">Widget Size</p>
+                <h4 className="mt-3 text-xl font-semibold tracking-tight text-white">Choose the right footprint</h4>
+                <p className="mt-3 text-sm leading-relaxed text-white/60">
+                  Make this card compact or give it more room depending on how often you need it on the dashboard.
+                </p>
+
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  {(['sm', 'md', 'lg', 'full'] as WidgetSize[]).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        updateWidgetSize(tabId, widgetId, option);
+                        setShowSettings(false);
+                      }}
+                      className={cn(
+                        'rounded-[20px] border px-4 py-4 text-left transition-all',
+                        size === option
+                          ? 'border-[rgba(240,90,61,0.2)] bg-[rgba(240,90,61,0.12)] text-white shadow-[0_16px_28px_rgba(240,90,61,0.12)]'
+                          : 'border-white/8 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]',
+                      )}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{option}</p>
+                      <p className="mt-2 text-sm font-semibold">{SIZE_LABELS[option]}</p>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSettings(false)}
+                  className="soft-action mt-6 w-full justify-center"
+                >
+                  Close
+                </button>
               </div>
-              <button onClick={() => setShowSettings(false)} className="mx-auto text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors">
-                 Close Uplink
-              </button>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </GlassCard>
     </motion.div>

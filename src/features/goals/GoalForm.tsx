@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { LoaderCircle, Target, X } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { cn } from '../../utils/cn';
@@ -99,18 +100,19 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
   };
 
   return (
-    <GlassCard className="border-white/5 bg-black/40 p-6">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, ease: 'easeOut' }}>
+      <GlassCard className="border-white/8 bg-[rgba(255,255,255,0.02)] p-5">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-red-500/70">Goal Control</p>
-          <h3 className="mt-2 text-2xl font-black uppercase tracking-tight text-white">{isEditing ? 'Edit Goal' : 'Create Goal'}</h3>
-          <p className="mt-2 text-sm text-slate-500">Capture the goal, its progress, and whether it is active or paused.</p>
+          <p className="section-eyebrow">Goal Control</p>
+          <h3 className="mt-3 text-xl font-semibold tracking-tight text-white">{isEditing ? 'Edit goal' : 'Create goal'}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-white/60">Capture the goal, its progress, and whether it is actively in motion or paused.</p>
         </div>
         {isEditing ? (
           <button
             type="button"
             onClick={onCancelEdit}
-            className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-slate-400 transition-colors hover:text-white"
+            className="soft-action p-3 text-white/60 hover:text-white"
             aria-label="Cancel editing goal"
           >
             <X size={16} />
@@ -118,40 +120,40 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
         ) : null}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="goal-title" className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Title</label>
+          <label htmlFor="goal-title" className="text-xs font-medium uppercase tracking-[0.18em] text-white/50">Title</label>
           <input
             id="goal-title"
             type="text"
             value={formState.title}
             onChange={(event) => handleFieldChange('title', event.target.value)}
             placeholder="Ship the Goals feature to production"
-            className="w-full rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-700 focus:border-red-500/40"
+            className="input-surface"
             required
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="goal-description" className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Description</label>
+          <label htmlFor="goal-description" className="text-xs font-medium uppercase tracking-[0.18em] text-white/50">Description</label>
           <textarea
             id="goal-description"
             value={formState.description}
             onChange={(event) => handleFieldChange('description', event.target.value)}
             placeholder="Add scope, expected outcome, or delivery notes."
             rows={4}
-            className="w-full rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-slate-700 focus:border-red-500/40"
+            className="input-surface"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label htmlFor="goal-status" className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Status Mode</label>
+            <label htmlFor="goal-status" className="text-xs font-medium uppercase tracking-[0.18em] text-white/50">Status Mode</label>
             <select
               id="goal-status"
               value={formState.status}
               onChange={(event) => handleFieldChange('status', event.target.value as GoalStatusValue)}
-              className="w-full rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-red-500/40"
+              className="input-surface"
             >
               {EDITABLE_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value} className="bg-black text-white">
@@ -159,14 +161,14 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
                 </option>
               ))}
             </select>
-            <p className="text-xs text-slate-500">Set progress to 100% to mark the goal completed.</p>
+            <p className="text-sm text-white/60">Set progress to 100% to mark the goal completed.</p>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="goal-progress" className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Progress</label>
-            <div className="rounded-2xl border border-white/10 bg-black/50 p-4">
-              <div className="mb-3 flex items-center justify-between text-xs font-black uppercase tracking-[0.2em]">
-                <span className="text-slate-500">Completion</span>
+            <label htmlFor="goal-progress" className="text-xs font-medium uppercase tracking-[0.18em] text-white/50">Progress</label>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
+              <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.18em]">
+                <span className="text-white/50">Completion</span>
                 <span className="text-white">{formState.progress}%</span>
               </div>
               <input
@@ -177,7 +179,7 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
                 step={5}
                 value={formState.progress}
                 onChange={(event) => handleFieldChange('progress', clampGoalProgress(Number(event.target.value)))}
-                className="w-full accent-red-500"
+                className="w-full accent-blue-400"
               />
             </div>
           </div>
@@ -185,26 +187,26 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
 
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-2 text-red-400">
+            <div className="rounded-xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.12)] p-2 text-[var(--shell-brand)]">
               <Target size={16} />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Resolved Status</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Resolved Status</p>
               <p className="mt-1 text-sm font-semibold text-white">{getGoalStatusLabel(resolvedStatus)}</p>
             </div>
           </div>
-          <span className={cn('rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em]', STATUS_STYLES[resolvedStatus])}>
+          <span className={cn('rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]', STATUS_STYLES[resolvedStatus])}>
             {getGoalStatusLabel(resolvedStatus)}
           </span>
         </div>
 
-        {activeError ? <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{activeError}</div> : null}
+        {activeError ? <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] px-4 py-3 text-sm text-slate-100">{activeError}</div> : null}
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center gap-3 rounded-2xl bg-red-600 px-5 py-3 text-sm font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-red-950"
+            className="primary-action w-full justify-center text-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             {isSubmitting ? <LoaderCircle size={16} className="animate-spin" /> : null}
             {isEditing ? 'Update Goal' : 'Create Goal'}
@@ -214,13 +216,14 @@ export function GoalForm({ userId, goal, onCancelEdit, onSuccess }: GoalFormProp
               type="button"
               onClick={onCancelEdit}
               disabled={isSubmitting}
-              className="rounded-2xl border border-white/10 px-5 py-3 text-sm font-black uppercase tracking-[0.24em] text-slate-400 transition-colors hover:text-white disabled:cursor-not-allowed"
+              className="soft-action w-full justify-center text-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
               Cancel
             </button>
           ) : null}
         </div>
       </form>
-    </GlassCard>
+      </GlassCard>
+    </motion.div>
   );
 }

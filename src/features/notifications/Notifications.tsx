@@ -10,6 +10,8 @@ import {
   Workflow,
 } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { NotificationAlertForm } from './NotificationAlertForm';
 import { NotificationAlertList } from './NotificationAlertList';
 import type {
@@ -81,8 +83,8 @@ export function Notifications() {
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/40 px-5 py-4 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
-          <LoaderCircle size={18} className="animate-spin text-red-500" />
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-white/60 backdrop-blur-xl">
+          <LoaderCircle size={18} className="animate-spin text-[var(--shell-brand)]" />
           Loading Notifications
         </div>
       </div>
@@ -91,113 +93,102 @@ export function Notifications() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-red-500/70">Signal Desk</p>
-          <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-white">Notifications</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-500">
-            Reminders are local-first. They restore on app load and fire while COMMAND.OS stays open after browser permission is granted.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => void rescheduleAlerts()}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08]"
-        >
-          <RefreshCw size={14} />
-          Restore Schedules
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Signal Desk"
+        title="Make reminders useful, not noisy"
+        description="Notifications are local-first and honest about their limits. This page should make permission state, reminder health, and scheduling status obvious at a glance."
+        actions={
+          <button
+            type="button"
+            onClick={() => void rescheduleAlerts()}
+            className="soft-action"
+          >
+            <RefreshCw size={14} />
+            Restore Schedules
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Permission</p>
-          <div className="mt-3 flex items-center gap-3">
-            {permission === 'granted' ? (
-              <ShieldCheck size={20} className="text-emerald-400" />
-            ) : (
-              <BellOff size={20} className="text-red-400" />
-            )}
-            <p className="text-2xl font-black text-white">{getPermissionTitle(permission)}</p>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500">{getPermissionDetail(permission)}</p>
-          {permission === 'default' ? (
-            <button
-              type="button"
-              onClick={() => void requestPermission()}
-              disabled={isRequestingPermission}
-              className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Bell size={14} />
-              {isRequestingPermission ? 'Requesting...' : 'Request Permission'}
-            </button>
-          ) : null}
-        </GlassCard>
+        <MetricCard
+          label="Permission"
+          value={getPermissionTitle(permission)}
+          description={getPermissionDetail(permission)}
+          icon={permission === 'granted' ? ShieldCheck : BellOff}
+          tone={permission === 'granted' ? 'success' : 'brand'}
+          className="relative"
+        />
 
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Service Worker</p>
-          <div className="mt-3 flex items-center gap-3">
-            <Workflow size={20} className={serviceWorkerRegistered ? 'text-emerald-400' : 'text-slate-500'} />
-            <p className="text-2xl font-black text-white">
-              {!serviceWorkerSupported
-                ? 'Unsupported'
-                : serviceWorkerRegistered
-                  ? 'Registered'
-                  : 'Pending'}
-            </p>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500">
-            {!serviceWorkerSupported
+        <MetricCard
+          label="Service Worker"
+          value={!serviceWorkerSupported ? 'Unsupported' : serviceWorkerRegistered ? 'Registered' : 'Pending'}
+          description={
+            !serviceWorkerSupported
               ? 'This browser does not support service workers for COMMAND.OS.'
               : serviceWorkerRegistered
                 ? 'The app startup flow is registering the service worker successfully.'
-                : 'The app is attempting registration. Reminder delivery still only claims app-open behavior.'}
-          </p>
-        </GlassCard>
+                : 'Registration is still pending; reminder claims remain app-open only.'
+          }
+          icon={Workflow}
+          tone={serviceWorkerRegistered ? 'success' : 'neutral'}
+        />
 
-        <GlassCard className="border-white/5 bg-black/40 p-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Active Reminders</p>
-          <p className="mt-3 text-3xl font-black text-white">{activeAlertCount}</p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500">
-            {enabledAlertCount === 0
+        <MetricCard
+          label="Active Reminders"
+          value={activeAlertCount}
+          description={
+            enabledAlertCount === 0
               ? 'No enabled reminders yet.'
               : permission === 'granted'
                 ? `${activeAlertCount} enabled reminder${activeAlertCount === 1 ? '' : 's'} restored while the app is open.`
-                : `${enabledAlertCount} reminder${enabledAlertCount === 1 ? '' : 's'} saved locally, waiting on permission.`}
-          </p>
-        </GlassCard>
+                : `${enabledAlertCount} reminder${enabledAlertCount === 1 ? '' : 's'} saved locally, waiting on permission.`
+          }
+          icon={Bell}
+          tone="warning"
+        />
       </div>
+
+      {permission === 'default' ? (
+        <button
+          type="button"
+          onClick={() => void requestPermission()}
+          disabled={isRequestingPermission}
+          className="primary-action disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Bell size={14} />
+          {isRequestingPermission ? 'Requesting...' : 'Request Permission'}
+        </button>
+      ) : null}
 
       {serviceWorkerError ? (
         <GlassCard className="border-amber-500/20 bg-amber-500/10 p-5">
-          <p className="text-sm leading-relaxed text-amber-100/85">{serviceWorkerError}</p>
+          <p className="body-copy">{serviceWorkerError}</p>
         </GlassCard>
       ) : null}
 
       {error ? (
-        <GlassCard className="border-red-500/20 bg-red-500/10 p-6">
+        <GlassCard className="border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] p-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-red-400">
+            <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.12)] p-3 text-[var(--shell-brand)]">
               <ShieldAlert size={18} />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-white">Notifications Unavailable</h2>
-              <p className="mt-3 text-sm leading-relaxed text-red-200/80">{error}</p>
+              <h2 className="text-xl font-semibold tracking-[-0.03em] text-white">Notifications are unavailable right now</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-100/80">{error}</p>
             </div>
           </div>
         </GlassCard>
       ) : null}
 
       {!notificationsSupported ? (
-        <GlassCard className="border-red-500/20 bg-red-500/10 p-6">
+        <GlassCard className="border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.08)] p-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-red-400">
+            <div className="rounded-2xl border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.12)] p-3 text-[var(--shell-brand)]">
               <ShieldAlert size={18} />
             </div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-white">Browser Support Required</h2>
-              <p className="mt-3 text-sm leading-relaxed text-red-200/80">
+              <h2 className="text-xl font-semibold tracking-[-0.03em] text-white">Browser support required</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-100/80">
                 This environment does not support browser notifications. You can still review reminders here, but delivery will stay inactive.
               </p>
             </div>

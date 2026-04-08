@@ -51,17 +51,17 @@ export function FocusTimerPanel({
   const displayLabel = getSessionStatusLabel(currentSession, recentSession);
 
   return (
-    <GlassCard className="border-white/5 bg-black/40 p-6">
+    <GlassCard className="border-white/8 bg-[rgba(255,255,255,0.02)] p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/70">Focus Timer</p>
-          <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Deep Work Session</h2>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500">The countdown is timestamp-based, so it restores accurately after refresh.</p>
+          <p className="section-eyebrow">Focus Timer</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-white">Deep work session</h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">The countdown is timestamp-based, so it restores accurately after refresh.</p>
         </div>
         <button
           type="button"
           onClick={onToggleFocusMode}
-          className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-[10px] font-black uppercase tracking-[0.26em] transition-colors ${
+          className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
             isFocusModeEnabled
               ? 'bg-amber-500 text-black hover:bg-amber-400'
               : 'border border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.08]'
@@ -72,19 +72,19 @@ export function FocusTimerPanel({
         </button>
       </div>
 
-      <div className="mt-8 rounded-[2rem] border border-white/5 bg-black/50 p-8 text-center">
+      <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur-xl">
         {loading ? (
           <div className="flex min-h-[180px] items-center justify-center">
-            <div className="flex items-center gap-3 text-sm font-black uppercase tracking-[0.24em] text-slate-400">
-              <LoaderCircle size={18} className="animate-spin text-red-500" />
+            <div className="flex items-center gap-3 text-sm font-semibold text-white/60">
+              <LoaderCircle size={18} className="animate-spin text-[var(--shell-brand)]" />
               Restoring Focus State
             </div>
           </div>
         ) : (
           <>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{displayLabel}</p>
-            <p className="mt-6 text-7xl font-black tracking-tight text-white">{formatRemainingTime(displaySeconds)}</p>
-            <p className="mt-4 text-[11px] font-black uppercase tracking-[0.3em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{displayLabel}</p>
+            <p className="metric-value mt-6 text-6xl sm:text-7xl">{formatRemainingTime(displaySeconds)}</p>
+            <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               {isRunning
                 ? `${summary.currentSessionProgressPercent}% through the current sprint`
                 : `${defaultDurationMinutes}-minute default sprint`}
@@ -98,7 +98,7 @@ export function FocusTimerPanel({
           type="button"
           onClick={() => void onStartSession()}
           disabled={loading || isRunning}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="primary-action text-sm disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Play size={16} />
           Start Session
@@ -108,7 +108,7 @@ export function FocusTimerPanel({
           type="button"
           onClick={() => void onCompleteSession()}
           disabled={loading || !isRunning}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+          className="soft-action text-sm disabled:cursor-not-allowed disabled:opacity-60"
         >
           <StopCircle size={16} />
           Complete
@@ -118,7 +118,7 @@ export function FocusTimerPanel({
           type="button"
           onClick={() => void onCancelSession()}
           disabled={loading || !isRunning}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+          className="soft-action text-sm disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Square size={16} />
           Cancel
@@ -126,20 +126,20 @@ export function FocusTimerPanel({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-white/5 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-red-400">
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--shell-brand)]">
             <Flame size={12} />
             Sessions Today
           </div>
-          <p className="mt-3 text-2xl font-black text-white">{summary.todayCompletedSessions}</p>
+          <p className="metric-value mt-3 text-2xl">{summary.todayCompletedSessions}</p>
         </div>
 
-        <div className="rounded-3xl border border-white/5 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-amber-400">
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
             <MoonStar size={12} />
             Focus Minutes
           </div>
-          <p className="mt-3 text-2xl font-black text-white">{summary.todayFocusMinutes}</p>
+          <p className="metric-value mt-3 text-2xl">{summary.todayFocusMinutes}</p>
         </div>
       </div>
     </GlassCard>

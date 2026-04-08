@@ -1,207 +1,154 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
-import { 
-  Activity, Wallet, Dumbbell, Timer, 
-  ShieldCheck, Zap, Target, PencilLine, 
-  Layers, Shield, Bell,
-  ArrowUpRight, AlertCircle, CheckCircle2,
+import {
+  Activity,
+  AlertCircle,
+  ArrowRight,
+  Bell,
+  Bolt,
+  BookMarked,
+  CheckCircle2,
+  Dumbbell,
+  Layers,
+  PencilLine,
+  Shield,
+  ShieldCheck,
+  Target,
+  Timer,
+  Wallet,
 } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { MetricCard } from '../../components/ui/MetricCard';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../utils/cn';
 import { useCommandCenterMetrics } from './useCommandCenterMetrics';
 
 interface StrategicSector {
-  id: string;
-  path: string;
-  label: string;
-  icon: LucideIcon;
-  color: string;
-  bg: string;
-  border: string;
-  desc: string;
-}
-
-interface CommandBriefSector {
   id: keyof ReturnType<typeof useCommandCenterMetrics>['sectors'];
   path: string;
   label: string;
   icon: LucideIcon;
+  description: string;
 }
 
 const STATUS_STYLES = {
   ready: {
-    dot: 'bg-emerald-500',
-    text: 'text-emerald-400',
+    dot: 'bg-emerald-400',
+    text: 'text-emerald-300',
+    chip: 'border-emerald-500/18 bg-emerald-500/10',
   },
   empty: {
-    dot: 'bg-slate-600',
-    text: 'text-slate-400',
+    dot: 'bg-slate-500',
+    text: 'text-slate-300',
+    chip: 'border-white/10 bg-white/[0.04]',
   },
   loading: {
-    dot: 'bg-amber-500',
+    dot: 'bg-amber-400',
     text: 'text-amber-300',
+    chip: 'border-amber-500/18 bg-amber-500/10',
   },
   error: {
-    dot: 'bg-red-500',
-    text: 'text-red-400',
+    dot: 'bg-[var(--shell-brand)]',
+    text: 'text-[color:var(--shell-brand)]',
+    chip: 'border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.12)]',
   },
 } as const;
 
-function pluralize(value: number, singular: string, plural = `${singular}s`) {
-  return `${value} ${value === 1 ? singular : plural}`;
-}
-
 const STRATEGIC_SECTORS: StrategicSector[] = [
-  { 
-    id: 'command', 
-    path: '/', 
-    label: 'Command Center', 
-    icon: Activity, 
-    color: 'text-red-500', 
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/20',
-    desc: 'Primary Tactical HUD'
-  },
-  { 
-    id: 'market', 
-    path: '/market', 
-    label: 'Market Command', 
-    icon: Wallet, 
-    color: 'text-emerald-500', 
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/20',
-    desc: 'Wealth & Asset Intel'
-  },
-  { 
-    id: 'physical', 
-    path: '/physical', 
-    label: 'Physical Ops', 
-    icon: Dumbbell, 
-    color: 'text-cyan-500', 
-    bg: 'bg-cyan-600/10',
-    border: 'border-cyan-500/20',
-    desc: 'Operational Readiness'
-  },
-  { 
-    id: 'english', 
-    path: '/english', 
-    label: 'Language Lab', 
-    icon: Timer, 
-    color: 'text-fuchsia-500', 
-    bg: 'bg-fuchsia-500/10',
-    border: 'border-fuchsia-500/20',
-    desc: 'Lexicon Intelligence'
-  },
-  { 
-    id: 'habits', 
-    path: '/habits', 
-    label: 'Discipline Engine', 
-    icon: ShieldCheck, 
-    color: 'text-amber-500', 
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
-    desc: 'Behavioral Protocols'
-  },
-  { 
-    id: 'focus', 
-    path: '/focus', 
-    label: 'Deep Work', 
-    icon: Zap, 
-    color: 'text-violet-500', 
-    bg: 'bg-violet-500/10',
-    border: 'border-violet-500/20',
-    desc: 'Cognitive Sprint'
-  },
-  { 
-    id: 'goals', 
-    path: '/goals', 
-    label: 'Mission Planning', 
-    icon: Target, 
-    color: 'text-blue-500', 
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/20',
-    desc: 'Strategic Trajectory'
-  },
-  { 
-    id: 'journal', 
-    path: '/journal', 
-    label: 'After Action Log', 
-    icon: PencilLine, 
-    color: 'text-slate-400', 
-    bg: 'bg-white/5',
-    border: 'border-white/10',
-    desc: 'Historical Recon'
-  },
-  { 
-    id: 'settings', 
-    path: '/settings', 
-    label: 'OS Control', 
-    icon: Layers, 
-    color: 'text-red-600', 
-    bg: 'bg-red-600/5',
-    border: 'border-red-600/20',
-    desc: 'System Configuration'
-  }
-];
-
-const COMMAND_BRIEF_SECTORS: CommandBriefSector[] = [
   {
     id: 'habits',
     path: '/habits',
     label: 'Habits',
     icon: ShieldCheck,
+    description: 'Daily consistency, streaks, and checklist execution.',
   },
   {
     id: 'focus',
     path: '/focus',
     label: 'Focus',
-    icon: Zap,
+    icon: Bolt,
+    description: 'Deep work timer, focus mode, and distraction capture.',
   },
   {
     id: 'goals',
     path: '/goals',
     label: 'Goals',
     icon: Target,
+    description: 'Tracked progress and clear next-step planning.',
+  },
+  {
+    id: 'journal',
+    path: '/journal',
+    label: 'Daily Review',
+    icon: PencilLine,
+    description: 'Review today, capture lessons, and keep the record honest.',
   },
   {
     id: 'notifications',
     path: '/notifications',
     label: 'Alerts',
     icon: Bell,
+    description: 'Reminder delivery, browser permission, and schedules.',
+  },
+  {
+    id: 'settings',
+    path: '/settings',
+    label: 'Dashboard Control',
+    icon: Layers,
+    description: 'Widget visibility, layout reset, and shell management.',
+  },
+  {
+    id: 'market',
+    path: '/market',
+    label: 'Market',
+    icon: Wallet,
+    description: 'Secondary intelligence module with local market snapshots.',
+  },
+  {
+    id: 'physical',
+    path: '/physical',
+    label: 'Physical',
+    icon: Dumbbell,
+    description: 'Secondary readiness module for workouts and protocol.',
+  },
+  {
+    id: 'english',
+    path: '/english',
+    label: 'Language',
+    icon: Timer,
+    description: 'Secondary module for vocabulary and practice flow.',
   },
 ];
+
+function pluralize(value: number, singular: string, plural = `${singular}s`) {
+  return `${value} ${value === 1 ? singular : plural}`;
+}
 
 export function CommandBriefWidget() {
   const navigate = useNavigate();
   const { summary, sectors } = useCommandCenterMetrics();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-2 rounded-full border border-red-500/15 bg-red-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-red-300">
-            <Shield size={12} className="shrink-0" />
-            Live Mission Brief
-          </div>
-          <h2 className="mt-4 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
-            COMMAND CENTER
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
-            {summary.missionLabel}
-          </p>
+          <p className="section-eyebrow">Command Snapshot</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-white sm:text-4xl">Run Today Cleanly</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">{summary.missionLabel}</p>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] px-5 py-4 sm:max-w-xs sm:text-right">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Uplink Status</p>
-          <p className="mt-2 text-2xl font-black uppercase tracking-tight text-white">{summary.uplinkStatus}</p>
-          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">{summary.uplinkDetail}</p>
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 sm:max-w-xs">
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Uplink</p>
+          <p className="mt-2 text-xl font-semibold text-white">{summary.uplinkStatus}</p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-400">{summary.uplinkDetail}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {COMMAND_BRIEF_SECTORS.map((sector) => {
+        {['habits', 'focus', 'goals', 'notifications'].map((sectorId) => {
+          const sector = STRATEGIC_SECTORS.find((item) => item.id === sectorId)!;
           const metric = sectors[sector.id];
 
           return (
@@ -209,43 +156,26 @@ export function CommandBriefWidget() {
               key={sector.id}
               type="button"
               onClick={() => navigate(sector.path)}
-              className="group flex items-center justify-between gap-4 rounded-[1.75rem] border border-white/10 bg-black/40 px-4 py-4 text-left transition-colors hover:border-red-500/20 hover:bg-white/[0.04]"
+              className="group flex items-start justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-white/14 hover:bg-white/[0.05]"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-red-400">
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-[var(--shell-brand)]">
                     <sector.icon size={16} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-black uppercase tracking-[0.18em] text-white">{sector.label}</p>
-                    <p className={cn('mt-1 text-[10px] font-black uppercase tracking-[0.24em]', STATUS_STYLES[metric.status].text)}>
+                    <p className="text-sm font-semibold text-white">{sector.label}</p>
+                    <p className={cn('mt-1 text-[11px] font-semibold uppercase tracking-[0.18em]', STATUS_STYLES[metric.status].text)}>
                       {metric.label}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <ArrowUpRight size={16} className="shrink-0 text-slate-600 transition-colors group-hover:text-red-400" />
+              <ArrowRight size={16} className="mt-1 shrink-0 text-slate-600 transition-colors group-hover:text-slate-200" />
             </button>
           );
         })}
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => navigate('/focus')}
-          className="rounded-2xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500"
-        >
-          Start Focus Flow
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/goals')}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08]"
-        >
-          Review Goals
-        </button>
       </div>
     </div>
   );
@@ -257,126 +187,212 @@ export function WarRoom() {
   const { sectors, summary } = useCommandCenterMetrics();
 
   const footerMessage = summary.errorCount > 0
-    ? `${pluralize(summary.errorCount, 'sector')} need attention before the dashboard is fully trustworthy.`
+    ? `${pluralize(summary.errorCount, 'surface')} still needs work before the dashboard feels fully trustworthy.`
     : summary.loadingCount > 0
-      ? `Syncing ${pluralize(summary.loadingCount, 'sector')} for the latest dashboard state.`
+      ? `${pluralize(summary.loadingCount, 'surface')} are syncing right now.`
       : summary.readyCount > 0
-        ? `COMMAND.OS is reporting live data across ${pluralize(summary.readyCount, 'sector')}.`
-        : 'No dashboard data yet. Start with goals, habits, focus, journal, or alerts.';
+        ? `Core workflows are reporting across ${pluralize(summary.readyCount, 'surface')}.`
+        : 'Start with goals, habits, focus, daily review, or alerts.';
 
   return (
-    <div className="space-y-12">
-      {/* Prime HUD Header */}
-      <div className="flex flex-col gap-8 border-b border-white/5 pb-10 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-4">
-           <div className="flex items-center gap-3">
-              <Shield className="text-red-600 w-5 h-5" />
-              <span className="text-[10px] font-black text-red-500/60 tracking-[0.4em] uppercase">Tactical HUD Alpha</span>
-           </div>
-           <h1 className="text-4xl font-black uppercase leading-none tracking-tighter text-white sm:text-5xl xl:text-7xl">
-              COMMAND CENTER
-           </h1>
-           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-              <p className="text-sm font-bold uppercase tracking-widest text-slate-500">{summary.missionLabel}</p>
-              <div className="h-px w-24 bg-red-600/30" />
-              <div className="flex items-center gap-2">
-                 <Zap size={14} className="text-amber-500 fill-amber-500" />
-                 <span className="text-lg font-black text-white">{totalXP} XP</span>
-              </div>
-           </div>
-        </div>
-        
-        <div className="group flex w-full items-center gap-4 rounded-3xl border border-red-600/30 bg-red-600/10 px-6 py-5 sm:w-auto sm:px-8">
-           <div className="min-w-0 sm:text-right">
-              <p className="text-[8px] text-red-500 font-black uppercase tracking-widest leading-none">Dashboard Truth</p>
-              <p className="text-lg font-black text-white mt-1">{summary.uplinkStatus}</p>
-              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.28em] text-red-200/70">{summary.uplinkDetail}</p>
-           </div>
-           <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.3)]">
-              <Activity size={24} className="text-white animate-pulse" />
-           </div>
-        </div>
+    <div className="space-y-8 md:space-y-10">
+      <PageHeader
+        eyebrow="Command Center"
+        title="The daily loop in one disciplined surface"
+        description="COMMAND.OS should help you plan, execute, track, review, and return to the plan without visual noise or fake confidence. This page is the operating summary for that loop."
+        meta={
+          <>
+            <div className="rounded-full border border-white/8 bg-white/[0.03] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+              {summary.missionLabel}
+            </div>
+            <div className="rounded-full border border-[rgba(240,90,61,0.18)] bg-[rgba(240,90,61,0.1)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--shell-brand)]">
+              {summary.uplinkStatus}
+            </div>
+          </>
+        }
+        actions={
+          <>
+            <button type="button" className="primary-action" onClick={() => navigate('/focus')}>
+              <Bolt size={14} />
+              Start Focus
+            </button>
+            <button type="button" className="soft-action" onClick={() => navigate('/goals')}>
+              <Target size={14} />
+              Review Goals
+            </button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Total XP"
+          value={totalXP}
+          description="Accumulated system experience from tracked activity."
+          icon={Shield}
+          tone="brand"
+          trend={{ value: `${summary.readyCount} surfaces live`, direction: summary.readyCount > 0 ? 'up' : 'neutral' }}
+        />
+        <MetricCard
+          label="Ready Surfaces"
+          value={summary.readyCount}
+          description={`${pluralize(summary.readyCount, 'surface')} currently report live state.`}
+          icon={CheckCircle2}
+          tone="success"
+          trend={{ value: summary.readyCount === STRATEGIC_SECTORS.length ? 'Full coverage' : 'Growing coverage', direction: summary.readyCount > 0 ? 'up' : 'neutral' }}
+        />
+        <MetricCard
+          label="Needs Attention"
+          value={summary.errorCount}
+          description={summary.errorCount > 0 ? 'These sections have errors or missing trust signals.' : 'No current dashboard blockers reported.'}
+          icon={AlertCircle}
+          tone={summary.errorCount > 0 ? 'brand' : 'neutral'}
+          trend={{ value: summary.errorCount > 0 ? 'Review blockers' : 'Clear', direction: summary.errorCount > 0 ? 'down' : 'up' }}
+        />
+        <MetricCard
+          label="Syncing"
+          value={summary.loadingCount}
+          description={summary.loadingCount > 0 ? 'Data is still resolving in some workflows.' : 'No active sync delay right now.'}
+          icon={Activity}
+          tone={summary.loadingCount > 0 ? 'warning' : 'neutral'}
+          trend={{ value: summary.loadingCount > 0 ? 'In progress' : 'Stable', direction: summary.loadingCount > 0 ? 'neutral' : 'up' }}
+        />
       </div>
 
-      {/* Strategic Mission Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {STRATEGIC_SECTORS.map((sector, idx) => (
-          <motion.div
-            key={sector.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05 }}
-          >
-            <GlassCard 
-              className={cn(
-                "group hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer p-8 relative overflow-hidden",
-                sector.border,
-                sector.id === 'command' && "bg-[#080808] border-red-600/40"
-              )}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <GlassCard className="p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="section-eyebrow">Core Loop</p>
+              <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">What needs your attention today</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+                Move through the essentials in order. The goal is less visual drama and more reliable execution.
+              </p>
+            </div>
+            <BookMarked size={18} className="text-[var(--shell-brand)]" />
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+            {[
+              { label: 'Plan the day', path: '/goals', sectorId: 'goals' as const },
+              { label: 'Execute focused work', path: '/focus', sectorId: 'focus' as const },
+              { label: 'Track habits', path: '/habits', sectorId: 'habits' as const },
+              { label: 'Review the day', path: '/journal', sectorId: 'journal' as const },
+            ].map((item) => {
+              const metric = sectors[item.sectorId];
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className="group flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-white/14 hover:bg-white/[0.05]"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white">{item.label}</p>
+                    <p className={cn('mt-2 text-[11px] font-semibold uppercase tracking-[0.18em]', STATUS_STYLES[metric.status].text)}>
+                      {metric.label}
+                    </p>
+                  </div>
+                  <ArrowRight size={16} className="shrink-0 text-slate-600 transition-colors group-hover:text-slate-200" />
+                </button>
+              );
+            })}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="section-eyebrow">Quick Actions</p>
+              <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-white">Move the day forward</h2>
+            </div>
+            <Shield size={18} className="text-[var(--shell-brand)]" />
+          </div>
+
+          <div className="mt-6 space-y-3">
+            {[
+              { label: 'Open Deep Work', detail: 'Start or resume a focus sprint.', path: '/focus' },
+              { label: 'Update Goals', detail: 'Adjust progress and status.', path: '/goals' },
+              { label: 'Write Daily Review', detail: 'Capture what happened today.', path: '/journal' },
+              { label: 'Check Alerts', detail: 'Make sure reminders are useful.', path: '/notifications' },
+            ].map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => navigate(action.path)}
+                className="group flex w-full items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-4 text-left transition-all hover:border-white/14 hover:bg-white/[0.05]"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-white">{action.label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-400">{action.detail}</p>
+                </div>
+                <ArrowRight size={16} className="shrink-0 text-slate-600 transition-colors group-hover:text-slate-200" />
+              </button>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {STRATEGIC_SECTORS.map((sector, index) => {
+          const metric = sectors[sector.id];
+          const statusStyle = STATUS_STYLES[metric.status];
+
+          return (
+            <motion.button
+              key={sector.id}
+              type="button"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
               onClick={() => navigate(sector.path)}
+              className="group rounded-[28px] border border-white/8 bg-white/[0.025] p-5 text-left transition-all hover:border-white/14 hover:bg-white/[0.05]"
             >
-               {/* Sector Glow Icon */}
-               <div className="flex justify-between items-start mb-10">
-                  <div className={cn("p-4 rounded-2xl transition-all shadow-[0_0_20px_transparent] group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]", sector.bg, sector.color)}>
-                     <sector.icon size={28} />
-                  </div>
-                  <div className="p-2 border border-white/5 rounded-lg text-slate-700 group-hover:text-red-500 transition-colors">
-                     <ArrowUpRight size={18} />
-                  </div>
-               </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-[var(--shell-brand)]">
+                  <sector.icon size={18} />
+                </div>
+                <div className={cn('inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]', statusStyle.chip, statusStyle.text)}>
+                  <div className={cn('h-2 w-2 rounded-full', statusStyle.dot)} />
+                  {metric.status}
+                </div>
+              </div>
 
-               {/* Sector Intelligence */}
-               <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter transition-colors group-hover:text-white">
-                    {sector.label}
-                  </h3>
-                  <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.3em]">{sector.desc}</p>
-               </div>
+              <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] text-white">{sector.label}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">{sector.description}</p>
+              <p className={cn('mt-4 text-[11px] font-semibold uppercase tracking-[0.18em]', statusStyle.text)}>{metric.label}</p>
 
-               {/* Sector KPI Bar */}
-               <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                     <div className={cn("w-1.5 h-1.5 rounded-full", STATUS_STYLES[sectors[sector.id].status].dot)} />
-                     <span className={cn("text-[10px] font-black uppercase tracking-widest", STATUS_STYLES[sectors[sector.id].status].text)}>
-                        {sectors[sector.id].label}
-                     </span>
-                  </div>
-                  <span className="text-[8px] font-black text-slate-800 uppercase tracking-widest group-hover:text-slate-600 transition-colors">DEPLOY SECTOR</span>
-               </div>
-
-               {/* Sector Background Texture */}
-               <div className="absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity">
-                  <sector.icon size={120} />
-               </div>
-            </GlassCard>
-          </motion.div>
-        ))}
+              <div className="mt-5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 transition-colors group-hover:text-slate-200">
+                Open surface
+                <ArrowRight size={14} />
+              </div>
+            </motion.button>
+          );
+        })}
       </div>
 
-      {/* Global Status Footer */}
-      <div className="mb-12 flex flex-col gap-6 rounded-[3rem] border border-white/5 bg-white/[0.01] p-8 md:flex-row md:items-center md:justify-between md:p-12">
-         <div className="flex items-start gap-4 sm:items-center sm:gap-6">
-            <div className="p-4 bg-white/5 rounded-2xl">
-               <AlertCircle size={24} className="text-slate-600" />
+      <GlassCard className="p-6 md:p-7">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-3 text-slate-300">
+              <AlertCircle size={18} />
             </div>
             <div>
-               <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Integrated Intelligence</p>
-               <p className="text-white font-bold text-sm mt-1">{footerMessage}</p>
+              <p className="section-eyebrow">Command Note</p>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300">{footerMessage}</p>
             </div>
-         </div>
-         <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-6 py-3">
-               <CheckCircle2 size={16} className="text-emerald-500" />
-               <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">{pluralize(summary.readyCount, 'sector')} live</span>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <div className="rounded-full border border-emerald-500/18 bg-emerald-500/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              {pluralize(summary.readyCount, 'surface')} live
             </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-red-600/20 bg-red-600/5 px-6 py-3">
-               <ShieldCheck size={16} className="text-red-500" />
-               <span className="text-[9px] font-black text-red-400 uppercase tracking-[0.3em]">
-                  {summary.errorCount > 0 ? `${pluralize(summary.errorCount, 'issue')} open` : `${pluralize(summary.emptyCount, 'sector')} awaiting setup`}
-               </span>
+            <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+              {pluralize(summary.emptyCount, 'surface')} waiting setup
             </div>
-         </div>
-      </div>
+          </div>
+        </div>
+      </GlassCard>
     </div>
   );
 }

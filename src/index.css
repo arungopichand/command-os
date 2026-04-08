@@ -1,40 +1,192 @@
 @import "tailwindcss";
 
 @theme {
-  --font-base: "Inter", "Roboto", "Helvetica Neue", sans-serif;
-  --color-dark-bg: #0f172a;
-  --color-glass-bg: rgba(255, 255, 255, 0.05);
-  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --font-sans: "Aptos", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  --font-display: "Bahnschrift", "Aptos", "Segoe UI Variable Display", sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", monospace;
 }
 
 @layer base {
+  :root {
+    color-scheme: dark;
+    --shell-bg: #05080d;
+    --shell-bg-soft: #0c131b;
+    --shell-panel: rgba(10, 16, 24, 0.84);
+    --shell-panel-strong: rgba(8, 13, 20, 0.96);
+    --shell-panel-muted: rgba(255, 255, 255, 0.035);
+    --shell-border: rgba(151, 169, 194, 0.12);
+    --shell-border-strong: rgba(151, 169, 194, 0.2);
+    --shell-copy: #e7edf5;
+    --shell-copy-muted: #93a1b5;
+    --shell-copy-soft: #6f7d90;
+    --shell-brand: #f05a3d;
+    --shell-brand-soft: rgba(240, 90, 61, 0.16);
+    --shell-brand-ring: rgba(240, 90, 61, 0.26);
+    --shell-success: #46c287;
+    --shell-warning: #f1b94d;
+    --shell-radius: 1.75rem;
+    --space-1: 0.5rem;
+    --space-2: 1rem;
+    --space-3: 1.5rem;
+    --space-4: 2rem;
+  }
+
+  * {
+    border-color: var(--shell-border);
+  }
+
+  html {
+    min-height: 100%;
+    background: var(--shell-bg);
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden min-h-screen;
-    background: radial-gradient(circle at 15% 50%, rgba(30, 58, 138, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                #020617; /* slate-950 */
+    @apply min-h-screen overflow-x-hidden font-sans antialiased;
+    color: var(--shell-copy);
+    background:
+      radial-gradient(circle at top left, rgba(79, 128, 255, 0.12), transparent 32%),
+      radial-gradient(circle at top right, rgba(240, 90, 61, 0.12), transparent 26%),
+      linear-gradient(180deg, #081018 0%, #060b10 38%, #04070b 100%);
     background-attachment: fixed;
   }
-}
 
-/* Glassmorphism Classes */
-@layer utilities {
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl;
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--shell-copy-soft) 88%, transparent);
+  }
+
+  ::selection {
+    background: rgba(240, 90, 61, 0.24);
+    color: white;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.28);
   }
 }
 
-/* Custom Scrollbar for sleekness */
+@layer utilities {
+  .glass-panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 34%),
+      var(--shell-panel);
+    border: 1px solid var(--shell-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 8px 40px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(24px);
+  }
+
+  .panel-muted {
+    background: color-mix(in srgb, var(--shell-panel) 74%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .panel-quiet {
+    background: var(--shell-panel-muted);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .section-eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.32em];
+    color: color-mix(in srgb, var(--shell-brand) 86%, white);
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-bold tracking-[-0.045em] text-white sm:text-4xl;
+  }
+
+  .page-subtitle {
+    @apply text-sm leading-relaxed text-white/60 sm:text-[15px];
+  }
+
+  .body-copy {
+    @apply text-sm leading-relaxed text-white/80;
+  }
+
+  .metric-value {
+    @apply font-display font-bold tracking-[-0.04em] text-white;
+  }
+
+  .soft-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] transition-all duration-200;
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--shell-copy);
+  }
+
+  .soft-action:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.02);
+  }
+
+  .soft-action:focus-visible {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .soft-action:active {
+    transform: scale(0.98);
+  }
+
+  .primary-action {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white transition-all duration-200;
+    background: linear-gradient(135deg, #f05a3d 0%, #dc4b31 100%);
+    box-shadow: 0 14px 30px rgba(240, 90, 61, 0.28);
+  }
+
+  .primary-action:hover {
+    background: linear-gradient(135deg, #f46b4f 0%, #e15438 100%);
+    transform: scale(1.02);
+  }
+
+  .primary-action:focus-visible {
+    background: linear-gradient(135deg, #f46b4f 0%, #e15438 100%);
+  }
+
+  .primary-action:active {
+    transform: scale(0.98);
+  }
+
+  .input-surface {
+    @apply w-full rounded-xl border px-4 py-2.5 text-sm text-white outline-none transition-all duration-200;
+    min-height: 2.75rem;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .input-surface:focus {
+    border-color: rgba(96, 165, 250, 0.5);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.24);
+  }
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-white/20;
+  background: rgba(255, 255, 255, 0.2);
 }
