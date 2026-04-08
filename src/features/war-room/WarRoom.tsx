@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { 
   Activity, Wallet, Dumbbell, Timer, 
   ShieldCheck, Zap, Target, PencilLine, 
-  Layers, Shield,
+  Layers, Shield, Bell,
   ArrowUpRight, AlertCircle, CheckCircle2,
 } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -21,6 +21,13 @@ interface StrategicSector {
   bg: string;
   border: string;
   desc: string;
+}
+
+interface CommandBriefSector {
+  id: keyof ReturnType<typeof useCommandCenterMetrics>['sectors'];
+  path: string;
+  label: string;
+  icon: LucideIcon;
 }
 
 const STATUS_STYLES = {
@@ -139,6 +146,111 @@ const STRATEGIC_SECTORS: StrategicSector[] = [
   }
 ];
 
+const COMMAND_BRIEF_SECTORS: CommandBriefSector[] = [
+  {
+    id: 'habits',
+    path: '/habits',
+    label: 'Habits',
+    icon: ShieldCheck,
+  },
+  {
+    id: 'focus',
+    path: '/focus',
+    label: 'Focus',
+    icon: Zap,
+  },
+  {
+    id: 'goals',
+    path: '/goals',
+    label: 'Goals',
+    icon: Target,
+  },
+  {
+    id: 'notifications',
+    path: '/notifications',
+    label: 'Alerts',
+    icon: Bell,
+  },
+];
+
+export function CommandBriefWidget() {
+  const navigate = useNavigate();
+  const { summary, sectors } = useCommandCenterMetrics();
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 rounded-full border border-red-500/15 bg-red-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-red-300">
+            <Shield size={12} className="shrink-0" />
+            Live Mission Brief
+          </div>
+          <h2 className="mt-4 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+            COMMAND CENTER
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+            {summary.missionLabel}
+          </p>
+        </div>
+
+        <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] px-5 py-4 sm:max-w-xs sm:text-right">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Uplink Status</p>
+          <p className="mt-2 text-2xl font-black uppercase tracking-tight text-white">{summary.uplinkStatus}</p>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">{summary.uplinkDetail}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {COMMAND_BRIEF_SECTORS.map((sector) => {
+          const metric = sectors[sector.id];
+
+          return (
+            <button
+              key={sector.id}
+              type="button"
+              onClick={() => navigate(sector.path)}
+              className="group flex items-center justify-between gap-4 rounded-[1.75rem] border border-white/10 bg-black/40 px-4 py-4 text-left transition-colors hover:border-red-500/20 hover:bg-white/[0.04]"
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-red-400">
+                    <sector.icon size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-black uppercase tracking-[0.18em] text-white">{sector.label}</p>
+                    <p className={cn('mt-1 text-[10px] font-black uppercase tracking-[0.24em]', STATUS_STYLES[metric.status].text)}>
+                      {metric.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <ArrowUpRight size={16} className="shrink-0 text-slate-600 transition-colors group-hover:text-red-400" />
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => navigate('/focus')}
+          className="rounded-2xl bg-red-600 px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-white transition-colors hover:bg-red-500"
+        >
+          Start Focus Flow
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/goals')}
+          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-black uppercase tracking-[0.24em] text-slate-200 transition-colors hover:bg-white/[0.08]"
+        >
+          Review Goals
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function WarRoom() {
   const navigate = useNavigate();
   const { totalXP } = useAppStore();
@@ -155,17 +267,17 @@ export function WarRoom() {
   return (
     <div className="space-y-12">
       {/* Prime HUD Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 pb-10 border-b border-white/5">
+      <div className="flex flex-col gap-8 border-b border-white/5 pb-10 md:flex-row md:items-end md:justify-between">
         <div className="space-y-4">
            <div className="flex items-center gap-3">
               <Shield className="text-red-600 w-5 h-5" />
               <span className="text-[10px] font-black text-red-500/60 tracking-[0.4em] uppercase">Tactical HUD Alpha</span>
            </div>
-           <h1 className="text-7xl font-black text-white tracking-tighter uppercase leading-none">
+           <h1 className="text-4xl font-black uppercase leading-none tracking-tighter text-white sm:text-5xl xl:text-7xl">
               COMMAND CENTER
            </h1>
-           <div className="flex items-center gap-6">
-              <p className="text-slate-500 text-sm font-bold uppercase tracking-widest indent-2">{summary.missionLabel}</p>
+           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <p className="text-sm font-bold uppercase tracking-widest text-slate-500">{summary.missionLabel}</p>
               <div className="h-px w-24 bg-red-600/30" />
               <div className="flex items-center gap-2">
                  <Zap size={14} className="text-amber-500 fill-amber-500" />
@@ -174,8 +286,8 @@ export function WarRoom() {
            </div>
         </div>
         
-        <div className="bg-red-600/10 border border-red-600/30 px-8 py-5 rounded-3xl flex items-center gap-6 group cursor-default">
-           <div className="text-right">
+        <div className="group flex w-full items-center gap-4 rounded-3xl border border-red-600/30 bg-red-600/10 px-6 py-5 sm:w-auto sm:px-8">
+           <div className="min-w-0 sm:text-right">
               <p className="text-[8px] text-red-500 font-black uppercase tracking-widest leading-none">Dashboard Truth</p>
               <p className="text-lg font-black text-white mt-1">{summary.uplinkStatus}</p>
               <p className="mt-2 text-[9px] font-black uppercase tracking-[0.28em] text-red-200/70">{summary.uplinkDetail}</p>
@@ -242,8 +354,8 @@ export function WarRoom() {
       </div>
 
       {/* Global Status Footer */}
-      <div className="p-12 border border-white/5 rounded-[3rem] bg-white/[0.01] flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
-         <div className="flex items-center gap-6">
+      <div className="mb-12 flex flex-col gap-6 rounded-[3rem] border border-white/5 bg-white/[0.01] p-8 md:flex-row md:items-center md:justify-between md:p-12">
+         <div className="flex items-start gap-4 sm:items-center sm:gap-6">
             <div className="p-4 bg-white/5 rounded-2xl">
                <AlertCircle size={24} className="text-slate-600" />
             </div>
@@ -252,12 +364,12 @@ export function WarRoom() {
                <p className="text-white font-bold text-sm mt-1">{footerMessage}</p>
             </div>
          </div>
-         <div className="flex gap-4">
-            <div className="px-6 py-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center gap-3">
+         <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-6 py-3">
                <CheckCircle2 size={16} className="text-emerald-500" />
                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">{pluralize(summary.readyCount, 'sector')} live</span>
             </div>
-            <div className="px-6 py-3 bg-red-600/5 border border-red-600/20 rounded-2xl flex items-center gap-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-red-600/20 bg-red-600/5 px-6 py-3">
                <ShieldCheck size={16} className="text-red-500" />
                <span className="text-[9px] font-black text-red-400 uppercase tracking-[0.3em]">
                   {summary.errorCount > 0 ? `${pluralize(summary.errorCount, 'issue')} open` : `${pluralize(summary.emptyCount, 'sector')} awaiting setup`}

@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ tabId }: DashboardLayoutProps) {
-  const { tabs } = useWidgetStore();
+  const { tabs, resetTab } = useWidgetStore();
   const [isEditMode, setIsEditMode] = useState(false);
   
   const tab = tabs[tabId];
@@ -24,7 +24,9 @@ export function DashboardLayout({ tabId }: DashboardLayoutProps) {
     );
   }
 
-  const visibleWidgets = isEditMode ? tab.widgets : tab.widgets.filter(w => w.visible);
+  const visibleWidgets = (isEditMode ? tab.widgets : tab.widgets.filter(w => w.visible))
+    .slice()
+    .sort((a, b) => a.order - b.order);
   const totalWidgetCount = tab.widgets.length;
   const activeWidgetCount = tab.widgets.filter((widget) => widget.visible).length;
   const hiddenWidgetCount = totalWidgetCount - activeWidgetCount;
@@ -37,35 +39,40 @@ export function DashboardLayout({ tabId }: DashboardLayoutProps) {
         : `${activeWidgetCount} active, ${hiddenWidgetCount} hidden`;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 md:space-y-10">
       {/* Dashboard Tactical Control Bar */}
-      <div className="flex justify-between items-center bg-black/60 backdrop-blur-xl border border-white/5 px-8 py-5 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-        <div className="flex items-center gap-4">
-           <div className="p-3 bg-red-600/10 border border-red-600/20 rounded-xl">
+      <div className="flex flex-col gap-4 rounded-[2rem] border border-white/5 bg-black/60 px-5 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl md:px-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+           <div className="rounded-xl border border-red-600/20 bg-red-600/10 p-3">
              <LayoutGrid size={20} className="text-red-500" />
            </div>
-           <div>
-             <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{tab.label}</h2>
-             <p className="text-[8px] text-slate-500 uppercase tracking-[0.5em] font-black mt-2 leading-none">{statusLabel}</p>
+           <div className="min-w-0">
+             <h2 className="text-2xl font-black uppercase leading-none tracking-tighter text-white">{tab.label}</h2>
+             <p className="mt-2 text-[9px] font-black uppercase leading-none tracking-[0.35em] text-slate-500 md:text-[8px] md:tracking-[0.5em]">{statusLabel}</p>
            </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
            <button 
              onClick={() => setIsEditMode(!isEditMode)}
-             className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] text-[9px] transition-all ${isEditMode ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]' : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 border border-white/5'}`}
+             className={`inline-flex items-center justify-center gap-3 rounded-2xl px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${isEditMode ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]' : 'border border-white/5 bg-white/5 text-slate-500 hover:bg-white/10 hover:text-white'}`}
            >
              {isEditMode ? <Eye size={14} /> : <Settings2 size={14} />}
              {isEditMode ? 'Exit Command Mode' : 'Tactical Configuration'}
            </button>
-           <button className="p-3 bg-white/5 text-slate-500 hover:text-white rounded-2xl border border-white/5 transition-all">
+           <button
+             type="button"
+             onClick={() => resetTab(tabId)}
+             className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/5 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 transition-all hover:bg-white/10 hover:text-white"
+           >
              <RefreshCcw size={14} />
+             Reset Layout
            </button>
         </div>
       </div>
 
       {/* Responsive Widget Grid System */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 auto-rows-min">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 xl:gap-8">
         <AnimatePresence>
           {visibleWidgets.map((widget) => {
             const WidgetComponent = WIDGET_REGISTRY[widget.type];
@@ -79,8 +86,8 @@ export function DashboardLayout({ tabId }: DashboardLayoutProps) {
                 size={widget.size}
               >
                 {!widget.visible && isEditMode && (
-                  <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 text-center border-2 border-dashed border-red-500/20 rounded-3xl">
-                     <EyeOff size={24} className="text-red-500/20 mb-4" />
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-red-500/20 bg-black/80 p-6 text-center backdrop-blur-sm">
+                     <EyeOff size={24} className="mb-4 text-red-500/20" />
                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Widget Offline</p>
                   </div>
                 )}

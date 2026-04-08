@@ -28,10 +28,10 @@ export function WidgetContainer({ tabId, widgetId, label, size, children, isDrag
   };
 
   const sizeClasses = {
-    sm: 'col-span-1 row-span-1',
-    md: 'col-span-1 md:col-span-2 row-span-1',
-    lg: 'col-span-1 md:col-span-2 row-span-2',
-    full: 'col-span-1 md:col-span-4 row-span-2'
+    sm: 'col-span-1',
+    md: 'col-span-1 md:col-span-2 xl:col-span-2',
+    lg: 'col-span-1 md:col-span-2 xl:col-span-2',
+    full: 'col-span-1 md:col-span-2 xl:col-span-4'
   };
 
   return (
@@ -40,13 +40,13 @@ export function WidgetContainer({ tabId, widgetId, label, size, children, isDrag
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={cn("relative group/widget", sizeClasses[size])}
+      className={cn("relative min-w-0 group/widget", sizeClasses[size])}
     >
-      <GlassCard className="h-full border-white/5 bg-black/40 hover:border-red-600/20 transition-all duration-500 p-0 overflow-hidden flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+      <GlassCard className="flex h-full min-w-0 flex-col overflow-hidden border-white/5 bg-black/40 p-0 shadow-[0_0_40px_rgba(0,0,0,0.3)] transition-all duration-500 hover:border-red-600/20">
         
         {/* Widget Strategic Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] backdrop-blur-sm">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/5 bg-white/[0.02] px-4 py-4 backdrop-blur-sm sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
              {isDraggable && <GripVertical size={14} className="text-white/20 cursor-grab active:cursor-grabbing hover:text-red-500/50 transition-colors" />}
              {isEditingLabel ? (
                <form onSubmit={handleRename}>
@@ -59,14 +59,14 @@ export function WidgetContainer({ tabId, widgetId, label, size, children, isDrag
                  />
                </form>
              ) : (
-               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover/widget:text-red-500 transition-colors flex items-center gap-2">
-                 {label}
+               <h3 className="flex min-w-0 items-center gap-2 text-[10px] font-black uppercase tracking-[0.26em] text-slate-400 transition-colors group-hover/widget:text-red-500">
+                 <span className="truncate">{label}</span>
                  <Edit3 size={10} className="opacity-0 group-hover/widget:opacity-100 cursor-pointer text-white/30" onClick={() => setIsEditingLabel(true)} />
                </h3>
              )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
              <button onClick={() => setShowSettings(!showSettings)} className="p-1.5 hover:bg-white/5 rounded-lg text-white/20 hover:text-red-500 transition-all">
                 <Settings2 size={14} />
              </button>
@@ -77,7 +77,7 @@ export function WidgetContainer({ tabId, widgetId, label, size, children, isDrag
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 relative overflow-hidden">
+        <div className="relative flex-1 overflow-hidden p-4 sm:p-6">
           {children}
         </div>
 
