@@ -126,7 +126,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">Status</p>
               <p className="mt-2 text-sm font-semibold text-white">Late alpha / early beta</p>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                Core workflows are live. This pass is focused on polish, hierarchy, and widget quality.
+                Core workflows are live. This pass is focused on polish, hierarchy, and making the app feel page-first.
               </p>
             </div>
           </div>

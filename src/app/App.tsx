@@ -9,6 +9,13 @@ import { useAppStore } from '../store/useAppStore';
 import { isSupabaseConfigured, supabase, supabaseConfigError } from '../services/supabase';
 
 const Auth = lazy(() => import('../features/auth/Auth').then((m) => ({ default: m.Auth })));
+const Habits = lazy(() => import('../features/habits/Habits').then((m) => ({ default: m.Habits })));
+const Focus = lazy(() => import('../features/focus/Focus').then((m) => ({ default: m.Focus })));
+const Goals = lazy(() => import('../features/goals/Goals').then((m) => ({ default: m.Goals })));
+const DailyReview = lazy(() => import('../features/daily-review/DailyReview').then((m) => ({ default: m.DailyReview })));
+const MarketCommand = lazy(() => import('../features/trading/MarketCommand').then((m) => ({ default: m.MarketCommand })));
+const PhysicalOps = lazy(() => import('../features/workout/PhysicalOps').then((m) => ({ default: m.PhysicalOps })));
+const LanguageLab = lazy(() => import('../features/english/LanguageLab').then((m) => ({ default: m.LanguageLab })));
 const Notifications = lazy(() => import('../features/notifications/Notifications').then((m) => ({ default: m.Notifications })));
 const AUTH_BOOT_TIMEOUT_MS = 8000;
 
@@ -155,13 +162,13 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<DashboardLayout tabId="command" />} />
-            <Route path="market" element={<DashboardLayout tabId="market" />} />
-            <Route path="physical" element={<DashboardLayout tabId="physical" />} />
-            <Route path="english" element={<DashboardLayout tabId="english" />} />
-            <Route path="habits" element={<DashboardLayout tabId="habits" />} />
-            <Route path="focus" element={<DashboardLayout tabId="focus" />} />
-            <Route path="goals" element={<DashboardLayout tabId="goals" />} />
-            <Route path="journal" element={<DashboardLayout tabId="journal" />} />
+            <Route path="market" element={<MarketCommand />} />
+            <Route path="physical" element={<PhysicalOps />} />
+            <Route path="english" element={<LanguageLab />} />
+            <Route path="habits" element={<Habits />} />
+            <Route path="focus" element={<Focus />} />
+            <Route path="goals" element={<Goals />} />
+            <Route path="journal" element={<DailyReview />} />
             <Route path="settings" element={<OSControl />} />
             <Route path="notifications" element={<Notifications />} />
           </Route>

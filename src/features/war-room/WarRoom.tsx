@@ -95,9 +95,9 @@ const STRATEGIC_SECTORS: StrategicSector[] = [
   {
     id: 'settings',
     path: '/settings',
-    label: 'Dashboard Control',
+    label: 'Settings',
     icon: Layers,
-    description: 'Widget visibility, layout reset, and shell management.',
+    description: 'Command Center layout, export, and shell management.',
   },
   {
     id: 'market',
@@ -187,7 +187,7 @@ export function WarRoom() {
   const { sectors, summary } = useCommandCenterMetrics();
 
   const footerMessage = summary.errorCount > 0
-    ? `${pluralize(summary.errorCount, 'surface')} still needs work before the dashboard feels fully trustworthy.`
+    ? `${pluralize(summary.errorCount, 'surface')} still needs work before the app feels fully trustworthy.`
     : summary.loadingCount > 0
       ? `${pluralize(summary.loadingCount, 'surface')} are syncing right now.`
       : summary.readyCount > 0
@@ -244,7 +244,7 @@ export function WarRoom() {
         <MetricCard
           label="Needs Attention"
           value={summary.errorCount}
-          description={summary.errorCount > 0 ? 'These sections have errors or missing trust signals.' : 'No current dashboard blockers reported.'}
+          description={summary.errorCount > 0 ? 'These sections have errors or missing trust signals.' : 'No current app blockers reported.'}
           icon={AlertCircle}
           tone={summary.errorCount > 0 ? 'brand' : 'neutral'}
           trend={{ value: summary.errorCount > 0 ? 'Review blockers' : 'Clear', direction: summary.errorCount > 0 ? 'down' : 'up' }}

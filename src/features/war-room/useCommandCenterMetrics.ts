@@ -156,11 +156,8 @@ export function useCommandCenterMetrics(): CommandCenterMetrics {
 
   return useMemo(() => {
     const commandWidgets = tabs.command?.widgets ?? [];
-    const totalWidgets = Object.values(tabs).reduce((sum, tab) => sum + tab.widgets.length, 0);
-    const visibleWidgets = Object.values(tabs).reduce(
-      (sum, tab) => sum + tab.widgets.filter((widget) => widget.visible).length,
-      0,
-    );
+    const totalWidgets = commandWidgets.length;
+    const visibleWidgets = commandWidgets.filter((widget) => widget.visible).length;
     const visibleCommandWidgets = commandWidgets.filter((widget) => widget.visible).length;
 
     const totalHabits = habits.summary.totalHabits;
@@ -177,7 +174,7 @@ export function useCommandCenterMetrics(): CommandCenterMetrics {
         ? { status: 'empty', label: 'No widgets configured' }
         : visibleCommandWidgets === 0
           ? { status: 'empty', label: 'No widgets active' }
-          : { status: 'ready', label: `${visibleCommandWidgets} of ${commandWidgets.length} widgets active` },
+          : { status: 'ready', label: `${visibleCommandWidgets} of ${commandWidgets.length} summaries active` },
       market: { status: 'empty', label: 'No data yet' },
       physical: { status: 'empty', label: 'No data yet' },
       english: { status: 'empty', label: 'No data yet' },
@@ -222,10 +219,10 @@ export function useCommandCenterMetrics(): CommandCenterMetrics {
           ? { status: 'ready', label: 'Reviewed today' }
           : { status: 'empty', label: 'No entry yet' },
       settings: totalWidgets === 0
-        ? { status: 'empty', label: 'No widgets configured' }
+        ? { status: 'empty', label: 'No command widgets configured' }
         : visibleWidgets === totalWidgets
-          ? { status: 'ready', label: `All ${totalWidgets} widgets visible` }
-          : { status: 'ready', label: `${visibleWidgets} visible, ${totalWidgets - visibleWidgets} hidden` },
+          ? { status: 'ready', label: `All ${totalWidgets} command widgets visible` }
+          : { status: 'ready', label: `${visibleWidgets} visible, ${totalWidgets - visibleWidgets} hidden on home` },
       notifications: notifications.loading
         ? { status: 'loading', label: 'Loading alerts' }
         : notifications.error
@@ -252,7 +249,7 @@ export function useCommandCenterMetrics(): CommandCenterMetrics {
     const errorCount = sectorMetrics.filter((sector) => sector.status === 'error').length;
 
     const missionLabel = sessionState.isLoading || goalsQuery.isLoading
-      ? 'Syncing dashboard state'
+      ? 'Syncing command state'
       : goalsQuery.isError || sessionState.error
         ? 'Goals need attention'
         : activeGoalCount > 0
